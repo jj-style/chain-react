@@ -1,12 +1,18 @@
 package cmd
 
 import (
+	"context"
+	"database/sql"
+	"errors"
 	"fmt"
-	"os"
+	"log"
 
+	"github.com/jj-style/chain-react/src/db"
 	"github.com/jj-style/chain-react/src/tmdb"
+	_ "github.com/mattn/go-sqlite3"
 	go_tmdb "github.com/ryanbradynd05/go-tmdb"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -19,25 +25,11 @@ var actorsCmd = &cobra.Command{
 	Short: "fetch all actors from TMDB",
 	Run: func(cmd *cobra.Command, args []string) {
 		t := cmd.Context().Value("tmdb").(tmdb.TMDb)
-
-		people := make(chan *go_tmdb.Person)
-		reducer := func() error {
-			// Reduce
-			for p := range people {
-				fmt.Printf("==> %d - %s\n", p.ID, p.Name)
-			}
-			return nil
-		}
-		var err error
-		if update_missing {
-			err = t.GetMissingActors(cmd.Context(), people, reducer)
-		} else {
-			err = t.GetAllActors(cmd.Context(), people, reducer)
-		}
+		db, err := sql.Open("sqlite3", viper.GetString("db.file"))
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%v\n", err)
-			return
+			log.Fatalln(err)
 		}
+		run(cmd.Context(), &config{t: t, db: db})
 	},
 }
 
@@ -54,4 +46,48 @@ func init() {
 	// is called directly, e.g.:
 	// actorsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	actorsCmd.Flags().BoolVarP(&update_missing, "update", "u", false, "Only get missing actors")
+}
+
+type config struct {
+	t  tmdb.TMDb
+	db *sql.DB
+}
+
+func run(ctx context.Context, c *config) {
+	people := make(chan *go_tmdb.Person)
+	repo := db.NewSQLiteRepository(c.db)
+	if err := repo.Migrate(); err != nil {
+		log.Fatalln("migrating db: ", err)
+	}
+
+	reducer := func() error {
+		// Reduce
+		for p := range people {
+			fmt.Printf("==> %d - %s\n", p.ID, p.Name)
+			actor := db.Actor{Id: p.ID, Name: p.Name}
+			_, err := repo.CreateActor(actor)
+			if err != nil {
+				fmt.Printf("error storing %v: %v\n", actor, err)
+			}
+		}
+		return nil
+	}
+	var err error
+	if update_missing {
+		a, err2 := repo.LatestActor()
+		if err2 != nil {
+			if errors.Is(err2, db.ErrNotExists) {
+				err = c.t.GetAllActors(ctx, people, reducer)
+			} else {
+				log.Fatalln("getting latest actor: ", err2)
+			}
+		} else {
+			err = c.t.GetActorsFrom(ctx, people, reducer, a.Id)
+		}
+	} else {
+		err = c.t.GetAllActors(ctx, people, reducer)
+	}
+	if err != nil {
+		log.Fatalln(err)
+	}
 }

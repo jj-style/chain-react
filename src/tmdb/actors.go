@@ -3,6 +3,7 @@ package tmdb
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync/atomic"
 
 	go_tmdb "github.com/ryanbradynd05/go-tmdb"
@@ -40,8 +41,10 @@ func (t *tmdb) getActorsBetween(ctx context.Context, c chan<- *go_tmdb.Person, r
 			}()
 
 			for id := range ids {
-				if p, err := t.client.GetPersonInfo(id, map[string]string{"language": "en"}); err != nil {
-					return fmt.Errorf("GetPersonInfo %d: %s", id, err)
+				if p, err := t.client.GetPersonInfo(id, map[string]string{"language": "en-GB"}); err != nil {
+					if !strings.Contains(err.Error(), "The resource you requested could not be found.") {
+						return fmt.Errorf("GetPersonInfo %d: %s", id, err)
+					}
 				} else {
 					select {
 					case <-ctx.Done():
@@ -79,17 +82,19 @@ func (t *tmdb) GetAllActors(ctx context.Context, c chan<- *go_tmdb.Person, r fun
 	return t.getActorsBetween(ctx, c, r, 1, latestId)
 }
 
-func (t *tmdb) GetMissingActors(ctx context.Context, c chan<- *go_tmdb.Person, r func() error) error {
+func (t *tmdb) GetActorsFrom(ctx context.Context, c chan<- *go_tmdb.Person, r func() error, id int) error {
 	latest, err := t.getLatestPerson()
 	if err != nil {
 		return err
 	}
 
 	latestId := latest.ID
-	latestId = 10
+	latestId = id + 5
 
-	// TODO - get current max id from wherever we are storing the actors
-	currentId := 5
+	// sanity check
+	if id >= latestId {
+		return fmt.Errorf("Current latest id(%d) is greater than the latest from TMDB(%d)", id, latestId)
+	}
 
-	return t.getActorsBetween(ctx, c, r, currentId, latestId)
+	return t.getActorsBetween(ctx, c, r, id+1, latestId)
 }

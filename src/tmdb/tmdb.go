@@ -9,7 +9,7 @@ import (
 
 type TMDb interface {
 	GetAllActors(ctx context.Context, c chan<- *go_tmdb.Person, r func() error) error
-	GetMissingActors(ctx context.Context, c chan<- *go_tmdb.Person, r func() error) error
+	GetActorsFrom(ctx context.Context, c chan<- *go_tmdb.Person, r func() error, id int) error
 }
 
 type tmdb struct {
