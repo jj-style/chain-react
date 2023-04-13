@@ -21,6 +21,7 @@ var actorsCmd = &cobra.Command{
 		for _, a := range actors {
 			fmt.Printf("==> %d - %s\n", a.ID, a.Name)
 		}
+
 	},
 }
 

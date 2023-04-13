@@ -1,4 +1,4 @@
-module chain-react
+module github.com/jj-style/chain-react
 
 go 1.20
 

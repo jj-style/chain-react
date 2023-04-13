@@ -1,7 +1,7 @@
 package main
 
 import (
-	"chain-react/cmd"
+	"github.com/jj-style/chain-react/cmd"
 
 	log "github.com/sirupsen/logrus"
 )

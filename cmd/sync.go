@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"chain-react/cmd/src/tmdb"
+	"github.com/jj-style/chain-react/src/tmdb"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
