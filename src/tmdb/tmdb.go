@@ -1,12 +1,14 @@
 package tmdb
 
 import (
+	"context"
+
 	go_tmdb "github.com/ryanbradynd05/go-tmdb"
 	log "github.com/sirupsen/logrus"
 )
 
 type TMDb interface {
-	GetAllActors() ([]*go_tmdb.Person, error)
+	GetAllActors(ctx context.Context) (map[int]*go_tmdb.Person, error)
 }
 
 type tmdb struct {

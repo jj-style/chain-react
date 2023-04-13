@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -13,7 +15,8 @@ var actorsCmd = &cobra.Command{
 	Short: "fetch all actors from TMDB",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("actors called")
-		actors, err := TMDb.GetAllActors()
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		actors, err := TMDb.GetAllActors(ctx)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v\n", err)
 		}
@@ -21,7 +24,7 @@ var actorsCmd = &cobra.Command{
 		for _, a := range actors {
 			fmt.Printf("==> %d - %s\n", a.ID, a.Name)
 		}
-
+		cancel()
 	},
 }
 
