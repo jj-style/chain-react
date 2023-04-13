@@ -9,6 +9,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	update_missing bool
+)
+
 // actorsCmd represents the actors command
 var actorsCmd = &cobra.Command{
 	Use:   "actors",
@@ -24,7 +28,12 @@ var actorsCmd = &cobra.Command{
 			}
 			return nil
 		}
-		err := t.GetAllActors(cmd.Context(), people, reducer)
+		var err error
+		if update_missing {
+			err = t.GetMissingActors(cmd.Context(), people, reducer)
+		} else {
+			err = t.GetAllActors(cmd.Context(), people, reducer)
+		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v\n", err)
 			return
@@ -44,4 +53,5 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// actorsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	actorsCmd.Flags().BoolVarP(&update_missing, "update", "u", false, "Only get missing actors")
 }

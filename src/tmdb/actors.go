@@ -10,22 +10,14 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func (t *tmdb) GetAllActors(ctx context.Context, c chan<- *go_tmdb.Person, r func() error) error {
-	latest, err := t.client.GetPersonLatest()
-	if err != nil {
-		return err
-	}
-	t.log.WithFields(log.Fields{"name": latest.Name, "id": latest.ID}).Info("got latest person")
-
+func (t *tmdb) getActorsBetween(ctx context.Context, c chan<- *go_tmdb.Person, r func() error, start, end int) error {
 	g, ctx := errgroup.WithContext(ctx)
 
 	ids := make(chan int)
 	// Produce
 	g.Go(func() error {
 		defer close(ids)
-		latestId := 10
-		//latestId := latest.ID
-		for i := 1; i <= latestId; i++ {
+		for i := start; i <= end; i++ {
 			id := i // https://golang.org/doc/faq#closures_and_goroutines
 			select {
 			case <-ctx.Done():
@@ -65,4 +57,39 @@ func (t *tmdb) GetAllActors(ctx context.Context, c chan<- *go_tmdb.Person, r fun
 	g.Go(r)
 
 	return g.Wait()
+}
+
+func (t *tmdb) getLatestPerson() (*go_tmdb.PersonLatest, error) {
+	latest, err := t.client.GetPersonLatest()
+	if err != nil {
+		return nil, err
+	}
+	t.log.WithFields(log.Fields{"name": latest.Name, "id": latest.ID}).Info("got latest person")
+	return latest, nil
+}
+
+func (t *tmdb) GetAllActors(ctx context.Context, c chan<- *go_tmdb.Person, r func() error) error {
+	latest, err := t.getLatestPerson()
+	if err != nil {
+		return err
+	}
+
+	latestId := latest.ID
+	latestId = 10
+	return t.getActorsBetween(ctx, c, r, 1, latestId)
+}
+
+func (t *tmdb) GetMissingActors(ctx context.Context, c chan<- *go_tmdb.Person, r func() error) error {
+	latest, err := t.getLatestPerson()
+	if err != nil {
+		return err
+	}
+
+	latestId := latest.ID
+	latestId = 10
+
+	// TODO - get current max id from wherever we are storing the actors
+	currentId := 5
+
+	return t.getActorsBetween(ctx, c, r, currentId, latestId)
 }
