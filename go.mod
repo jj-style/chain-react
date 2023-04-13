@@ -1,4 +1,4 @@
-module ads
+module chain-react
 
 go 1.20
 

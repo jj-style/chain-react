@@ -35,7 +35,7 @@ func init() {
 	// is called directly, e.g.:
 	// serverCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	serverCmd.Flags().Int("port", 8080, "Port to run ads server on")
+	serverCmd.Flags().Int("port", 8080, "Port to run chain-react server on")
 	viper.BindPFlag("port", serverCmd.Flags().Lookup("port"))
 
 }

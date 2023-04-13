@@ -20,4 +20,4 @@ go.work
 
 # Local Config
 .env
-.ads.yaml
+.chain-react.yaml

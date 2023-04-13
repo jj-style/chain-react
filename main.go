@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ads/cmd"
+	"chain-react/cmd"
 
 	log "github.com/sirupsen/logrus"
 )

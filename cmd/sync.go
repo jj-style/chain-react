@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"ads/cmd/src/tmdb"
+	"chain-react/cmd/src/tmdb"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
