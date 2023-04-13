@@ -8,7 +8,7 @@ import (
 )
 
 type TMDb interface {
-	GetAllActors(ctx context.Context) (map[int]*go_tmdb.Person, error)
+	GetAllActors(ctx context.Context, c chan<- *go_tmdb.Person, r func() error) error
 }
 
 type tmdb struct {

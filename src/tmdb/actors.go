@@ -10,10 +10,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func (t *tmdb) GetAllActors(ctx context.Context) (map[int]*go_tmdb.Person, error) {
+func (t *tmdb) GetAllActors(ctx context.Context, c chan<- *go_tmdb.Person, r func() error) error {
 	latest, err := t.client.GetPersonLatest()
 	if err != nil {
-		return map[int]*go_tmdb.Person{}, nil
+		return err
 	}
 	t.log.WithFields(log.Fields{"name": latest.Name, "id": latest.ID}).Info("got latest person")
 
@@ -36,7 +36,6 @@ func (t *tmdb) GetAllActors(ctx context.Context) (map[int]*go_tmdb.Person, error
 		return nil
 	})
 
-	people := make(chan *go_tmdb.Person)
 	// Map
 	workers := int32(10)
 	for i := 0; i < int(workers); i++ {
@@ -44,7 +43,7 @@ func (t *tmdb) GetAllActors(ctx context.Context) (map[int]*go_tmdb.Person, error
 			defer func() {
 				// Last one out closes shop
 				if atomic.AddInt32(&workers, -1) == 0 {
-					close(people)
+					close(c)
 				}
 			}()
 
@@ -55,7 +54,7 @@ func (t *tmdb) GetAllActors(ctx context.Context) (map[int]*go_tmdb.Person, error
 					select {
 					case <-ctx.Done():
 						return ctx.Err()
-					case people <- p:
+					case c <- p:
 					}
 				}
 			}
@@ -63,13 +62,7 @@ func (t *tmdb) GetAllActors(ctx context.Context) (map[int]*go_tmdb.Person, error
 		})
 	}
 
-	// Reduce
-	ret := map[int]*go_tmdb.Person{}
-	g.Go(func() error {
-		for p := range people {
-			ret[p.ID] = p
-		}
-		return nil
-	})
-	return ret, g.Wait()
+	g.Go(r)
+
+	return g.Wait()
 }

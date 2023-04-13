@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"time"
 
+	"github.com/jj-style/chain-react/src/tmdb"
+	go_tmdb "github.com/ryanbradynd05/go-tmdb"
 	"github.com/spf13/cobra"
 )
 
@@ -14,17 +14,21 @@ var actorsCmd = &cobra.Command{
 	Use:   "actors",
 	Short: "fetch all actors from TMDB",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("actors called")
-		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-		actors, err := TMDb.GetAllActors(ctx)
+		t := cmd.Context().Value("tmdb").(tmdb.TMDb)
+
+		people := make(chan *go_tmdb.Person)
+		reducer := func() error {
+			// Reduce
+			for p := range people {
+				fmt.Printf("==> %d - %s\n", p.ID, p.Name)
+			}
+			return nil
+		}
+		err := t.GetAllActors(cmd.Context(), people, reducer)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%v\n", err)
+			return
 		}
-
-		for _, a := range actors {
-			fmt.Printf("==> %d - %s\n", a.ID, a.Name)
-		}
-		cancel()
 	},
 }
 

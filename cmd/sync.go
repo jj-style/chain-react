@@ -1,14 +1,12 @@
 package cmd
 
 import (
+	"context"
+
 	"github.com/jj-style/chain-react/src/tmdb"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-)
-
-var (
-	TMDb tmdb.TMDb
 )
 
 // syncCmd represents the sync command
@@ -17,7 +15,8 @@ var syncCmd = &cobra.Command{
 	Short: "re-sync database with TMDB database",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		api_key := viper.GetString("tmdb.api_key")
-		TMDb = tmdb.NewClient(api_key)
+		t := tmdb.NewClient(api_key)
+		cmd.SetContext(context.WithValue(cmd.Context(), "tmdb", t))
 	},
 }
 
