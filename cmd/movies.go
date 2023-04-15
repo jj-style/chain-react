@@ -22,7 +22,7 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	syncCmd.AddCommand(moviesCmd)
+	getCmd.AddCommand(moviesCmd)
 
 	// Here you will define your flags and configuration settings.
 

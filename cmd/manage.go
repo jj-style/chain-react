@@ -9,10 +9,10 @@ import (
 	"github.com/spf13/viper"
 )
 
-// syncCmd represents the sync command
-var syncCmd = &cobra.Command{
-	Use:   "sync",
-	Short: "re-sync database with TMDB database",
+// manageCmd represents the manage command
+var manageCmd = &cobra.Command{
+	Use:   "manage",
+	Short: "manage the TMDB database",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		api_key := viper.GetString("tmdb.api_key")
 		t := tmdb.NewClient(api_key)
@@ -21,7 +21,7 @@ var syncCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(syncCmd)
+	rootCmd.AddCommand(manageCmd)
 
 	// Here you will define your flags and configuration settings.
 

@@ -34,7 +34,7 @@ var actorsCmd = &cobra.Command{
 }
 
 func init() {
-	syncCmd.AddCommand(actorsCmd)
+	getCmd.AddCommand(actorsCmd)
 
 	// Here you will define your flags and configuration settings.
 
