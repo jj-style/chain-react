@@ -19,6 +19,10 @@ lint:
 .PHONY: clean ## Clean temporary files
 clean:
 
+.PHONY: run ## Run main server
+run:
+	go run main.go server
+
 MIGRATION_NAME?=migration
 TS=$(shell date +%Y%m%d-%H%M%S)
 .PHONY: add-migration

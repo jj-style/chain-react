@@ -1,8 +1,12 @@
 package cmd
 
 import (
+	"database/sql"
 	"fmt"
 
+	db2 "github.com/jj-style/chain-react/src/db"
+	_ "github.com/mattn/go-sqlite3"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -19,6 +23,24 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("server called")
+
+		// TODO - definitely refactor what is here elsewhere
+		db, err := sql.Open("sqlite3", viper.GetString("db.file"))
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		repo := db2.NewSQLiteRepository(db)
+		if err := repo.Migrate(); err != nil {
+			log.Fatalln("migrating db: ", err)
+		}
+
+		credits, err := repo.AllCredits()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Println(credits[0])
+		// TODO - put into graph represented by matrix
 	},
 }
 
