@@ -1,0 +1,18 @@
+CREATE TABLE IF NOT EXISTS actors(
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS movies(
+    id INTEGER PRIMARY KEY,
+    title TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS credits(
+    actor_id INTEGER,
+    movie_id INTEGER,
+    credit_id TEXT NOT NULL PRIMARY KEY,
+    character TEXT NOT NULL,
+    FOREIGN KEY(actor_id) REFERENCES actors(id) ON DELETE CASCADE,
+    FOREIGN KEY(movie_id) REFERENCES movies(id) ON DELETE CASCADE
+);

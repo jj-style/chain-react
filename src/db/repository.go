@@ -1,5 +1,10 @@
 package db
 
+import "embed"
+
+//go:embed ddl/migrations
+var migrationFs embed.FS
+
 type Repository interface {
 	// General
 	Migrate() error

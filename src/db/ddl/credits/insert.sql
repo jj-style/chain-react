@@ -1,0 +1,1 @@
+INSERT INTO credits(actor_id, movie_id, credit_id, character) values(?,?,?,?)

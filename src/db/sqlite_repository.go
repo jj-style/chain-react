@@ -2,9 +2,13 @@ package db
 
 import (
 	"database/sql"
+	_ "embed"
 	"errors"
+	"io/fs"
+	"path"
 
 	"github.com/mattn/go-sqlite3"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -13,44 +17,63 @@ var (
 	ErrDeleteFailed = errors.New("delete failed")
 )
 
+var (
+	//go:embed ddl/actors/insert.sql
+	INSERT_ACTOR_SQL string
+	//go:embed ddl/actors/all.sql
+	GET_ALL_ACTORS_SQL string
+	//go:embed ddl/actors/delete.sql
+	DELETE_ACTOR_SQL string
+	//go:embed ddl/actors/latest.sql
+	LATEST_ACTOR_SQL string
+
+	//go:embed ddl/movies/insert.sql
+	INSERT_MOVIE_SQL string
+	//go:embed ddl/movies/all.sql
+	GET_ALL_MOVIES_SQL string
+	//go:embed ddl/movies/delete.sql
+	DELETE_MOVIE_SQL string
+
+	//go:embed ddl/credits/insert.sql
+	INSERT_CREDITS_SQL string
+	//go:embed ddl/credits/all.sql
+	GET_ALL_CREDITS_SQL string
+)
+
 type SQLiteRepository struct {
-	db *sql.DB
+	db  *sql.DB
+	log *log.Logger
 }
 
 func NewSQLiteRepository(db *sql.DB) *SQLiteRepository {
 	return &SQLiteRepository{
-		db: db,
+		db:  db,
+		log: log.StandardLogger(),
 	}
 }
 
 func (r *SQLiteRepository) Migrate() error {
-	query := `
-    CREATE TABLE IF NOT EXISTS actors(
-        id INTEGER PRIMARY KEY,
-        name TEXT NOT NULL
-    );
-
-	CREATE TABLE IF NOT EXISTS movies(
-		id INTEGER PRIMARY KEY,
-		title TEXT NOT NULL
-	);
-
-	CREATE TABLE IF NOT EXISTS credits(
-		actor_id INTEGER,
-		movie_id INTEGER,
-		credit_id TEXT NOT NULL PRIMARY KEY,
-		character TEXT NOT NULL,
-		FOREIGN KEY(actor_id) REFERENCES actors(id) ON DELETE CASCADE,
-    	FOREIGN KEY(movie_id) REFERENCES movies(id) ON DELETE CASCADE
-	);
-    `
-
-	_, err := r.db.Exec(query)
-	return err
+	it, err := migrationFs.ReadDir(path.Join("ddl", "migrations"))
+	if err != nil {
+		log.Fatalln("opening migration directory: ", err)
+	}
+	for _, dirent := range it {
+		if !dirent.IsDir() {
+			continue
+		}
+		up_migration, err := fs.ReadFile(migrationFs, path.Join("ddl", "migrations", dirent.Name(), "up.sql"))
+		if err != nil {
+			log.Fatalf("reading migration script from %s: %v", dirent.Name(), err)
+		}
+		if _, err := r.db.Exec(string(up_migration)); err != nil {
+			log.Fatalf("executing migration from %s: %v", dirent.Name(), err)
+		}
+	}
+	return nil
 }
 
 func (r *SQLiteRepository) CreateActor(actor Actor) (*Actor, error) {
-	_, err := r.db.Exec("INSERT INTO actors(id, name) values(?,?)", actor.Id, actor.Name)
+	_, err := r.db.Exec(INSERT_ACTOR_SQL, actor.Id, actor.Name)
 	if err != nil {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) {
@@ -65,7 +88,7 @@ func (r *SQLiteRepository) CreateActor(actor Actor) (*Actor, error) {
 }
 
 func (r *SQLiteRepository) AllActors() ([]Actor, error) {
-	rows, err := r.db.Query("SELECT * FROM actors")
+	rows, err := r.db.Query(GET_ALL_ACTORS_SQL)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +106,7 @@ func (r *SQLiteRepository) AllActors() ([]Actor, error) {
 }
 
 func (r *SQLiteRepository) DeleteActor(id int64) error {
-	res, err := r.db.Exec("DELETE FROM actors WHERE id = ?", id)
+	res, err := r.db.Exec(DELETE_ACTOR_SQL, id)
 	if err != nil {
 		return err
 	}
@@ -101,7 +124,7 @@ func (r *SQLiteRepository) DeleteActor(id int64) error {
 }
 
 func (r *SQLiteRepository) LatestActor() (*Actor, error) {
-	row := r.db.QueryRow("SELECT * FROM actors ORDER BY id DESC LIMIT 1")
+	row := r.db.QueryRow(LATEST_ACTOR_SQL)
 
 	var actor Actor
 	if err := row.Scan(&actor.Id, &actor.Name); err != nil {
@@ -115,7 +138,7 @@ func (r *SQLiteRepository) LatestActor() (*Actor, error) {
 }
 
 func (r *SQLiteRepository) CreateMovie(movie Movie) (*Movie, error) {
-	_, err := r.db.Exec("INSERT INTO movies(id, title) values(?,?)", movie.Id, movie.Title)
+	_, err := r.db.Exec(INSERT_MOVIE_SQL, movie.Id, movie.Title)
 	if err != nil {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) {
@@ -130,7 +153,7 @@ func (r *SQLiteRepository) CreateMovie(movie Movie) (*Movie, error) {
 }
 
 func (r *SQLiteRepository) AllMovies() ([]Movie, error) {
-	rows, err := r.db.Query("SELECT * FROM movies")
+	rows, err := r.db.Query(GET_ALL_MOVIES_SQL)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +171,7 @@ func (r *SQLiteRepository) AllMovies() ([]Movie, error) {
 }
 
 func (r *SQLiteRepository) DeleteMovie(id int64) error {
-	res, err := r.db.Exec("DELETE FROM movies WHERE id = ?", id)
+	res, err := r.db.Exec(DELETE_MOVIE_SQL, id)
 	if err != nil {
 		return err
 	}
@@ -166,7 +189,7 @@ func (r *SQLiteRepository) DeleteMovie(id int64) error {
 }
 
 func (r *SQLiteRepository) CreateCredit(credit CreditIn) (*CreditIn, error) {
-	_, err := r.db.Exec("INSERT INTO credits(actor_id, movie_id, credit_id, character) values(?,?,?,?)", credit.ActorId, credit.MovieId, credit.CreditId, credit.Character)
+	_, err := r.db.Exec(INSERT_CREDITS_SQL, credit.ActorId, credit.MovieId, credit.CreditId, credit.Character)
 	if err != nil {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) {
@@ -181,7 +204,7 @@ func (r *SQLiteRepository) CreateCredit(credit CreditIn) (*CreditIn, error) {
 }
 
 func (r *SQLiteRepository) AllCredits() ([]Credit, error) {
-	rows, err := r.db.Query("SELECT actor_id,name,movie_id,title,credit_id,character FROM credits INNER JOIN actors ON credits.actor_id = actors.id INNER JOIN movies ON credits.movie_id = movies.id;")
+	rows, err := r.db.Query(GET_ALL_CREDITS_SQL)
 	if err != nil {
 		return nil, err
 	}

@@ -19,6 +19,12 @@ lint:
 .PHONY: clean ## Clean temporary files
 clean:
 
+MIGRATION_NAME?=migration
+TS=$(shell date +%Y%m%d-%H%M%S)
+.PHONY: add-migration
+add-migration:
+	@$(shell mkdir -p "src/db/ddl/migrations/${TS}-${MIGRATION_NAME}")
+	@$(shell touch src/db/ddl/migrations/${TS}-${MIGRATION_NAME}/{up.sql,down.sql})
 
 .PHONY: help
 help: ## Show this help
