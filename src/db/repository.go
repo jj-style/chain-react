@@ -11,7 +11,10 @@ type Repository interface {
 	LatestActor() (*Actor, error)
 
 	// Movies
-	//CreateMovie(actor Movie) (*Movie, error)
-	//AllMovies() ([]Movie, error)
-	//DeleteMovie(id int64) error
+	CreateMovie(movie Movie) (*Movie, error)
+	AllMovies() ([]Movie, error)
+	DeleteMovie(id int64) error
+
+	// Credits
+	CreateCredit(credit Credit) (*Credit, error)
 }

@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"errors"
 
 	"github.com/jj-style/chain-react/src/db"
 	"github.com/jj-style/chain-react/src/tmdb"
@@ -27,6 +27,10 @@ to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		t := cmd.Context().Value("tmdb").(tmdb.TMDb)
 		db, err := sql.Open("sqlite3", viper.GetString("db.file"))
+		if err != nil {
+			log.Fatalln(err)
+		}
+		_, err = db.Exec("PRAGMA foreign_keys = ON;")
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -61,8 +65,33 @@ func runGetMovies(ctx context.Context, c *CmdConfig) {
 
 	credits := make(chan *go_tmdb.PersonMovieCredits)
 	reducer := func() error {
-		for c := range credits {
-			fmt.Println(c)
+		for cr := range credits {
+			// fmt.Println(cr)
+
+			// insert movie first (if not exist)
+			for _, mc := range cr.Cast {
+				m := db.Movie{Id: mc.ID, Title: mc.Title}
+				_, err = repo.CreateMovie(m)
+				if err != nil {
+					if errors.Is(err, db.ErrDuplicate) {
+						c.log.Debugf("skip creating existing movie(%v)", m)
+					} else {
+						c.log.Errorf("creating movie(%v): %v", m, err)
+						continue
+					}
+				}
+				// movie exists so insert credit entry for this actor
+				credit := db.Credit{ActorId: cr.ID, MovieId: mc.ID, CreditId: mc.CreditID, Character: mc.Character}
+				// TODO - filter inserting credits based on "character" ("self"/"himself"/"voices", ...)
+				// TODO - only insert actors if poss - not directors
+				if _, err = repo.CreateCredit(credit); err != nil {
+					if errors.Is(err, db.ErrDuplicate) {
+						c.log.Debugf("skip creating existing credit(%v)", credit)
+					} else {
+						c.log.Errorf("creating credit(%v): %v", credit, err)
+					}
+				}
+			}
 		}
 		return nil
 	}
