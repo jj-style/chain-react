@@ -16,5 +16,6 @@ type Repository interface {
 	DeleteMovie(id int64) error
 
 	// Credits
-	CreateCredit(credit Credit) (*Credit, error)
+	CreateCredit(credit CreditIn) (*CreditIn, error)
+	AllCredits() ([]Credit, error)
 }

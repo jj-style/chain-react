@@ -81,7 +81,7 @@ func runGetMovies(ctx context.Context, c *CmdConfig) {
 					}
 				}
 				// movie exists so insert credit entry for this actor
-				credit := db.Credit{ActorId: cr.ID, MovieId: mc.ID, CreditId: mc.CreditID, Character: mc.Character}
+				credit := db.CreditIn{ActorId: cr.ID, MovieId: mc.ID, CreditId: mc.CreditID, Character: mc.Character}
 				// TODO - filter inserting credits based on "character" ("self"/"himself"/"voices", ...)
 				// TODO - only insert actors if poss - not directors
 				if _, err = repo.CreateCredit(credit); err != nil {

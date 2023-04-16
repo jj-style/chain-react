@@ -165,7 +165,7 @@ func (r *SQLiteRepository) DeleteMovie(id int64) error {
 	return err
 }
 
-func (r *SQLiteRepository) CreateCredit(credit Credit) (*Credit, error) {
+func (r *SQLiteRepository) CreateCredit(credit CreditIn) (*CreditIn, error) {
 	_, err := r.db.Exec("INSERT INTO credits(actor_id, movie_id, credit_id, character) values(?,?,?,?)", credit.ActorId, credit.MovieId, credit.CreditId, credit.Character)
 	if err != nil {
 		var sqliteErr sqlite3.Error
@@ -178,4 +178,22 @@ func (r *SQLiteRepository) CreateCredit(credit Credit) (*Credit, error) {
 	}
 
 	return &credit, nil
+}
+
+func (r *SQLiteRepository) AllCredits() ([]Credit, error) {
+	rows, err := r.db.Query("SELECT actor_id,name,movie_id,title,credit_id,character FROM credits INNER JOIN actors ON credits.actor_id = actors.id INNER JOIN movies ON credits.movie_id = movies.id;")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var all []Credit
+	for rows.Next() {
+		var credit Credit
+		if err := rows.Scan(&credit.Actor.Id, &credit.Actor.Name, &credit.Movie.Id, &credit.Movie.Title, &credit.CreditId, &credit.Character); err != nil {
+			return nil, err
+		}
+		all = append(all, credit)
+	}
+	return all, nil
 }
