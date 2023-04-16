@@ -8,9 +8,16 @@ import (
 )
 
 type TMDb interface {
+	// Get all actors up to the latest actor in TMDB database.
+	// Calls the reducer function `r` for each actor successfully retrieved.
 	GetAllActors(ctx context.Context, c chan<- *go_tmdb.Person, r func() error) error
+	// Get all actors from the id given up to the latest actor in TMDB database from.
+	// Calls the reducer function `r` for each actor successfully retrieved.
 	GetActorsFrom(ctx context.Context, c chan<- *go_tmdb.Person, r func() error, id int) error
 	// TODO - add GetActorByID
+	// Gets the movie credits for the actor given by the id.
+	GetActorMovieCredits(ctx context.Context, id int) (*go_tmdb.PersonMovieCredits, error)
+	GetAllActorMovieCredits(ctx context.Context, c chan<- *go_tmdb.PersonMovieCredits, r func() error, ids ...int) error
 }
 
 type tmdb struct {

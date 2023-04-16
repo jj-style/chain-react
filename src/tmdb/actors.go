@@ -41,7 +41,7 @@ func (t *tmdb) getActorsBetween(ctx context.Context, c chan<- *go_tmdb.Person, r
 
 			for id := range ids {
 				if p, err := t.client.GetPersonInfo(id, map[string]string{"language": "en-GB"}); err != nil {
-					t.log.Errorf("fetchinf person(%d): %v", id, err)
+					t.log.Errorf("fetching person(%d): %v", id, err)
 				} else {
 					select {
 					case <-ctx.Done():

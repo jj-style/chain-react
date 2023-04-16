@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/jj-style/chain-react/src/tmdb"
-
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

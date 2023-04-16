@@ -29,7 +29,7 @@ var actorsCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalln(err)
 		}
-		run(cmd.Context(), &config{t: t, db: db, log: log.StandardLogger()})
+		runGetActors(cmd.Context(), &CmdConfig{t: t, db: db, log: log.StandardLogger()})
 	},
 }
 
@@ -48,13 +48,7 @@ func init() {
 	actorsCmd.Flags().BoolVarP(&update_missing, "update", "u", false, "Only get missing actors")
 }
 
-type config struct {
-	t   tmdb.TMDb
-	db  *sql.DB
-	log *log.Logger
-}
-
-func run(ctx context.Context, c *config) {
+func runGetActors(ctx context.Context, c *CmdConfig) {
 	people := make(chan *go_tmdb.Person)
 	repo := db.NewSQLiteRepository(c.db)
 	if err := repo.Migrate(); err != nil {
