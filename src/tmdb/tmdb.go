@@ -3,13 +3,14 @@ package tmdb
 import (
 	"context"
 
-	go_tmdb "github.com/ryanbradynd05/go-tmdb"
+	go_tmdb "github.com/jj-style/go-tmdb"
 	log "github.com/sirupsen/logrus"
 )
 
 type TMDb interface {
 	GetAllActors(ctx context.Context, c chan<- *go_tmdb.Person, r func() error) error
 	GetActorsFrom(ctx context.Context, c chan<- *go_tmdb.Person, r func() error, id int) error
+	// TODO - add GetActorByID
 }
 
 type tmdb struct {

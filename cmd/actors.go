@@ -5,12 +5,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/jj-style/chain-react/src/db"
 	"github.com/jj-style/chain-react/src/tmdb"
+	go_tmdb "github.com/jj-style/go-tmdb"
 	_ "github.com/mattn/go-sqlite3"
-	go_tmdb "github.com/ryanbradynd05/go-tmdb"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -29,7 +29,7 @@ var actorsCmd = &cobra.Command{
 		if err != nil {
 			log.Fatalln(err)
 		}
-		run(cmd.Context(), &config{t: t, db: db})
+		run(cmd.Context(), &config{t: t, db: db, log: log.StandardLogger()})
 	},
 }
 
@@ -49,8 +49,9 @@ func init() {
 }
 
 type config struct {
-	t  tmdb.TMDb
-	db *sql.DB
+	t   tmdb.TMDb
+	db  *sql.DB
+	log *log.Logger
 }
 
 func run(ctx context.Context, c *config) {
@@ -63,7 +64,11 @@ func run(ctx context.Context, c *config) {
 	reducer := func() error {
 		// Reduce
 		for p := range people {
-			fmt.Printf("==> %d - %s\n", p.ID, p.Name)
+			if p.Popularity < 10 {
+				c.log.Warnf("skipping person(%d - %s) as popularity(%f) < 10", p.ID, p.Name, p.Popularity)
+				continue
+			}
+			c.log.Infof("==> saving person(%d - %s)\n", p.ID, p.Name)
 			actor := db.Actor{Id: p.ID, Name: p.Name}
 			_, err := repo.CreateActor(actor)
 			if err != nil {

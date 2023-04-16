@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync/atomic"
 
-	go_tmdb "github.com/ryanbradynd05/go-tmdb"
+	go_tmdb "github.com/jj-style/go-tmdb"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )
@@ -42,6 +42,7 @@ func (t *tmdb) getActorsBetween(ctx context.Context, c chan<- *go_tmdb.Person, r
 
 			for id := range ids {
 				if p, err := t.client.GetPersonInfo(id, map[string]string{"language": "en-GB"}); err != nil {
+					// TODO - don't error, just log as can fetch missing ones later
 					if !strings.Contains(err.Error(), "The resource you requested could not be found.") {
 						return fmt.Errorf("GetPersonInfo %d: %s", id, err)
 					}
@@ -78,7 +79,7 @@ func (t *tmdb) GetAllActors(ctx context.Context, c chan<- *go_tmdb.Person, r fun
 	}
 
 	latestId := latest.ID
-	latestId = 10
+	//latestId = 10
 	return t.getActorsBetween(ctx, c, r, 1, latestId)
 }
 
