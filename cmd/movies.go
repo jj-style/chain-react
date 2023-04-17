@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"errors"
+	"regexp"
 
 	"github.com/jj-style/chain-react/src/config"
 	"github.com/jj-style/chain-react/src/db"
@@ -67,6 +68,9 @@ func runGetMovies(ctx context.Context, c *config.RConfig) {
 				}
 				// movie exists so insert credit entry for this actor
 				credit := db.CreditIn{ActorId: cr.ID, MovieId: mc.ID, CreditId: mc.CreditID, Character: mc.Character}
+				if shouldSkipCredit(credit) {
+					continue
+				}
 				// TODO - filter inserting credits based on "character" ("self"/"himself"/"voices", ...)
 				// TODO - only insert actors if poss - not directors
 				if _, err = c.Repo.CreateCredit(credit); err != nil {
@@ -84,4 +88,16 @@ func runGetMovies(ctx context.Context, c *config.RConfig) {
 	if err != nil {
 		log.Fatalln("getting all actor movie credits: ", err)
 	}
+}
+
+func shouldSkipCredit(c db.CreditIn) bool {
+	// TODO - compile regexes once
+	skipCharactersRe := []string{`^$`, `^Self.*$`, "^Himself.*$", "Herself.*", `.*\(voices?\).*`, `archive footage`, `\(uncredited\)`, `^Host\b`, `^Narrator\b`}
+	regexes := lo.Map(skipCharactersRe, func(s string, _ int) *regexp.Regexp { return regexp.MustCompile(s) })
+	for _, re := range regexes {
+		if re.MatchString(c.Character) {
+			return true
+		}
+	}
+	return false
 }

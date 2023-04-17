@@ -30,8 +30,6 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatalln("getting all credits: ", err)
 		}
-		fmt.Println(credits[0])
-		// TODO - put into graph represented by matrix
 
 		type edge struct {
 			src  db.Credit
