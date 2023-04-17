@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"database/sql"
 	"fmt"
 
-	db2 "github.com/jj-style/chain-react/src/db"
+	"github.com/jj-style/chain-react/src/config"
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -22,22 +21,11 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("server called")
+		cfg := cmd.Context().Value(config.RConfig{}).(config.RConfig)
 
-		// TODO - definitely refactor what is here elsewhere
-		db, err := sql.Open("sqlite3", viper.GetString("db.file"))
+		credits, err := cfg.Repo.AllCredits()
 		if err != nil {
-			log.Fatalln(err)
-		}
-
-		repo := db2.NewSQLiteRepository(db)
-		if err := repo.Migrate(); err != nil {
-			log.Fatalln("migrating db: ", err)
-		}
-
-		credits, err := repo.AllCredits()
-		if err != nil {
-			log.Fatalln(err)
+			log.Fatalln("getting all credits: ", err)
 		}
 		fmt.Println(credits[0])
 		// TODO - put into graph represented by matrix

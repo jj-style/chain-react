@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
+	"github.com/jj-style/chain-react/src/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -21,6 +24,15 @@ examples and usage of using your application. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		cfg := &config.Config{}
+		err := viper.Unmarshal(cfg)
+		if err != nil {
+			log.Fatalln("unmarshalling config: ", err)
+		}
+		rcfg := config.NewRuntimeConfig(cfg)
+		cmd.SetContext(context.WithValue(cmd.Context(), config.RConfig{}, rcfg))
+	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },

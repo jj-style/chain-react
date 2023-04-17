@@ -2,17 +2,15 @@ package cmd
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 
+	"github.com/jj-style/chain-react/src/config"
 	"github.com/jj-style/chain-react/src/db"
-	"github.com/jj-style/chain-react/src/tmdb"
 	go_tmdb "github.com/jj-style/go-tmdb"
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -24,12 +22,8 @@ var actorsCmd = &cobra.Command{
 	Use:   "actors",
 	Short: "fetch all actors from TMDB",
 	Run: func(cmd *cobra.Command, args []string) {
-		t := cmd.Context().Value("tmdb").(tmdb.TMDb)
-		db, err := sql.Open("sqlite3", viper.GetString("db.file"))
-		if err != nil {
-			log.Fatalln(err)
-		}
-		runGetActors(cmd.Context(), &CmdConfig{t: t, db: db, log: log.StandardLogger()})
+		c := cmd.Context().Value(config.RConfig{}).(config.RConfig)
+		runGetActors(cmd.Context(), &c)
 	},
 }
 
@@ -48,23 +42,19 @@ func init() {
 	actorsCmd.Flags().BoolVarP(&update_missing, "update", "u", false, "Only get missing actors")
 }
 
-func runGetActors(ctx context.Context, c *CmdConfig) {
+func runGetActors(ctx context.Context, c *config.RConfig) {
 	people := make(chan *go_tmdb.Person)
-	repo := db.NewSQLiteRepository(c.db)
-	if err := repo.Migrate(); err != nil {
-		log.Fatalln("migrating db: ", err)
-	}
 
 	reducer := func() error {
 		// Reduce
 		for p := range people {
 			if p.Popularity < 10 {
-				c.log.Warnf("skipping person(%d - %s) as popularity(%f) < 10", p.ID, p.Name, p.Popularity)
+				c.Log.Warnf("skipping person(%d - %s) as popularity(%f) < 10", p.ID, p.Name, p.Popularity)
 				continue
 			}
-			c.log.Infof("==> saving person(%d - %s)\n", p.ID, p.Name)
+			c.Log.Infof("==> saving person(%d - %s)\n", p.ID, p.Name)
 			actor := db.Actor{Id: p.ID, Name: p.Name}
-			_, err := repo.CreateActor(actor)
+			_, err := c.Repo.CreateActor(actor)
 			if err != nil {
 				fmt.Printf("error storing %v: %v\n", actor, err)
 			}
@@ -73,18 +63,18 @@ func runGetActors(ctx context.Context, c *CmdConfig) {
 	}
 	var err error
 	if update_missing {
-		a, err2 := repo.LatestActor()
+		a, err2 := c.Repo.LatestActor()
 		if err2 != nil {
 			if errors.Is(err2, db.ErrNotExists) {
-				err = c.t.GetAllActors(ctx, people, reducer)
+				err = c.Tmdb.GetAllActors(ctx, people, reducer)
 			} else {
 				log.Fatalln("getting latest actor: ", err2)
 			}
 		} else {
-			err = c.t.GetActorsFrom(ctx, people, reducer, a.Id)
+			err = c.Tmdb.GetActorsFrom(ctx, people, reducer, a.Id)
 		}
 	} else {
-		err = c.t.GetAllActors(ctx, people, reducer)
+		err = c.Tmdb.GetAllActors(ctx, people, reducer)
 	}
 	if err != nil {
 		log.Fatalln(err)

@@ -1,23 +1,14 @@
 package cmd
 
 import (
-	"context"
-
-	"github.com/jj-style/chain-react/src/tmdb"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // manageCmd represents the manage command
 var manageCmd = &cobra.Command{
 	Use:   "manage",
 	Short: "manage the TMDB database",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		api_key := viper.GetString("tmdb.api_key")
-		t := tmdb.NewClient(api_key)
-		cmd.SetContext(context.WithValue(cmd.Context(), "tmdb", t))
-	},
 }
 
 func init() {
