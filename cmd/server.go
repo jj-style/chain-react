@@ -4,7 +4,10 @@ import (
 	"fmt"
 
 	"github.com/jj-style/chain-react/src/config"
+	"github.com/jj-style/chain-react/src/db"
+	"github.com/jj-style/chain-react/src/graph"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -29,6 +32,36 @@ to quickly create a Cobra application.`,
 		}
 		fmt.Println(credits[0])
 		// TODO - put into graph represented by matrix
+
+		type edge struct {
+			src  db.Credit
+			dest db.Credit
+		}
+
+		g := graph.NewGraph[db.Actor, edge]()
+
+		// add all actors as vertices in graph
+		actors, err := cfg.Repo.AllActors()
+		if err != nil {
+			log.Fatalln("getting all actors: ", err)
+		}
+		for _, a := range actors {
+			g.AddVertex(a.Id, a)
+		}
+
+		creditsByMovieId := lo.GroupBy(credits, func(c db.Credit) int { return c.Movie.Id })
+		for _, c := range credits {
+			// build edge between actor in credit, and every other actor in that movie
+			a := c.Actor
+			for _, oc := range creditsByMovieId[c.Movie.Id] {
+				if oc.Actor == a {
+					// avoid cycles
+					continue
+				}
+				g.AddEdge(a.Id, oc.Actor.Id, edge{src: c, dest: oc})
+			}
+		}
+		fmt.Print()
 	},
 }
 
