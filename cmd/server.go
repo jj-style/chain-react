@@ -59,7 +59,18 @@ to quickly create a Cobra application.`,
 				g.AddEdge(a.Id, oc.Actor.Id, edge{src: c, dest: oc})
 			}
 		}
-		fmt.Print()
+
+		paths := make(chan []graph.Element[db.Actor, edge])
+
+		go g.Bfs(31, 48, paths)
+		for p := range paths {
+			for idx, ve := range p {
+				if idx == 0 {
+					continue
+				}
+				fmt.Printf("%s:%s <=%s=> %s:%s\n", ve.Edge.Weight.src.Name, ve.Edge.Weight.src.Character, ve.Edge.Weight.src.Title, ve.Edge.Weight.dest.Name, ve.Edge.Weight.dest.Character)
+			}
+		}
 	},
 }
 

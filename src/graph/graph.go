@@ -1,5 +1,7 @@
 package graph
 
+import "github.com/samber/lo"
+
 // Graph represents a set of vertices connected by edges.
 type Graph[T, E any] struct {
 	Vertices map[int]*Vertex[T, E]
@@ -36,13 +38,13 @@ func (g *Graph[T, E]) AddEdge(srcKey, destKey int, weight E) {
 }
 
 func (g *Graph[T, E]) Neighbors(srcKey int) []T {
-	result := []T{}
+	return lo.MapToSlice(g.Vertices[srcKey].Edges, func(key int, value *Edge[T, E]) T {
+		return value.Vertex.Val
+	})
+}
 
-	for _, edge := range g.Vertices[srcKey].Edges {
-		result = append(result, edge.Vertex.Val)
-	}
-
-	return result
+func (g *Graph[T, E]) NeighboursMap(srcKey int) map[int]*Edge[T, E] {
+	return g.Vertices[srcKey].Edges
 }
 
 func (g *Graph[T, E]) HasVertex(key int) bool {
