@@ -64,6 +64,8 @@ to quickly create a Cobra application.`,
 
 		go g.Bfs(31, 48, paths)
 		for p := range paths {
+			// TODO - ignore paths that hop via the same movie
+			fmt.Println("***********")
 			for idx, ve := range p {
 				if idx == 0 {
 					continue

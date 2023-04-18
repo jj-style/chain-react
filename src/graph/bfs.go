@@ -19,28 +19,27 @@ func (g *Graph[T, U]) Bfs(src, dest int, found chan<- []Element[T, U]) {
 
 	queue = append(queue, utils.Clone(path))
 
-	visited := map[int]bool{} // track visited nodes to prevent cycles, if any
-
 	for len(queue) > 0 {
 		// dequeue
 		path := queue[0]
 		queue = queue[1:]
 
 		// if at dest, we have a path, stop here
-		last, _ := lo.Last(path)
+		last := path[len(path)-1]
 		if last.Id == dest {
 			found <- path
+			continue
 		}
 
 		// for all adjacent vertices to last, if not visited, add to queue
 		for adj, e := range g.NeighboursMap(last.Id) {
-			if _, seen := visited[adj]; !seen {
-				visited[adj] = true
+			if !lo.ContainsBy(path, func(item Element[T, U]) bool {
+				return item.Id == adj
+			}) {
 				newpath := utils.Clone(path)
 				newpath = append(newpath, Element[T, U]{Id: adj, Edge: e})
 				queue = append(queue, newpath)
 			}
 		}
 	}
-
 }
