@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/jj-style/chain-react/src/db"
+	"github.com/jj-style/chain-react/src/search"
 	"github.com/jj-style/chain-react/src/tmdb"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/meilisearch/meilisearch-go"
@@ -14,7 +15,7 @@ type RConfig struct {
 	Log    *log.Logger
 	Repo   db.Repository
 	Tmdb   tmdb.TMDb
-	Search *meilisearch.Client
+	Search search.Repository
 }
 
 func NewRuntimeConfig(c *Config) RConfig {
@@ -35,15 +36,16 @@ func NewRuntimeConfig(c *Config) RConfig {
 
 	t := tmdb.NewClient(c.Tmdb.ApiKey)
 
-	search := meilisearch.NewClient(meilisearch.ClientConfig{
+	m := meilisearch.NewClient(meilisearch.ClientConfig{
 		Host:   c.Meilisearch.Host,
 		APIKey: c.Meilisearch.ApiKey,
 	})
+	searchRepo := search.NewMeilisearchRepository(m)
 
 	return RConfig{
 		Log:    log.StandardLogger(),
 		Repo:   repo,
 		Tmdb:   t,
-		Search: search,
+		Search: &searchRepo,
 	}
 }

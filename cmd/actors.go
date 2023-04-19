@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"os/signal"
 
 	"github.com/jj-style/chain-react/src/config"
 	"github.com/jj-style/chain-react/src/db"
@@ -44,9 +46,22 @@ func init() {
 
 func runGetActors(ctx context.Context, c *config.RConfig) {
 	people := make(chan *go_tmdb.Person)
-	index := c.Search.Index("actors")
+
+	// listen for interrup signals to tear down the errgroup
+	ctx, cancel := context.WithCancel(ctx)
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt)
+	go func() {
+		for sig := range signals {
+			// sig is a ^C, handle it
+			c.Log.WithField("signal", sig).Info("received signal, disposing resources")
+			cancel()
+		}
+	}()
+
 	reducer := func() error {
 		// Reduce
+		newPeople := make([]db.Actor, 0)
 		for p := range people {
 			if p.Popularity < 10 {
 				c.Log.Warnf("skipping person(%d - %s) as popularity(%f) < 10", p.ID, p.Name, p.Popularity)
@@ -58,13 +73,14 @@ func runGetActors(ctx context.Context, c *config.RConfig) {
 			if err != nil {
 				fmt.Printf("error storing %v: %v\n", actor, err)
 			}
-			// TODO - batch these (so need a cancel ctrl+c hook)
-			// and would be good to use sql transaction and only commit if indexed
-			_, err = index.AddDocuments(actor)
-			if err != nil {
-				fmt.Printf("error indexing new people: %v\n", err)
-			}
+			newPeople = append(newPeople, actor)
 		}
+
+		// Index every fetched actor to the search DB
+		if err := c.Search.AddDocuments(newPeople, "actors"); err != nil {
+			fmt.Printf("error indexing new people: %v\n", err)
+		}
+
 		return nil
 	}
 	var err error
