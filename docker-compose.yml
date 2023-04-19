@@ -1,0 +1,5 @@
+version: '3'
+services:
+  # TODO server (when mysql repo implemented)
+  # TODO mariadb
+  

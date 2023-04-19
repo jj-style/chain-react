@@ -1,11 +1,7 @@
 .DEFAULT_GOAL := help
 
-FIND := /bin/find
-
-GO_FILES  := $(shell ${FIND} . -type f -name '*.go')
-
-build: $(GO_FILES) ## Build a binary
-	go build -o build/main
+build: ## Build a binary
+	mkdir -p build && CGO_ENABLED=1 go build -o build/main
 
 .PHONY: test
 test: ## Run automated tests
