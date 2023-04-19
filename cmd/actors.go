@@ -44,7 +44,7 @@ func init() {
 
 func runGetActors(ctx context.Context, c *config.RConfig) {
 	people := make(chan *go_tmdb.Person)
-
+	index := c.Search.Index("actors")
 	reducer := func() error {
 		// Reduce
 		for p := range people {
@@ -57,6 +57,12 @@ func runGetActors(ctx context.Context, c *config.RConfig) {
 			_, err := c.Repo.CreateActor(actor)
 			if err != nil {
 				fmt.Printf("error storing %v: %v\n", actor, err)
+			}
+			// TODO - batch these (so need a cancel ctrl+c hook)
+			// and would be good to use sql transaction and only commit if indexed
+			_, err = index.AddDocuments(actor)
+			if err != nil {
+				fmt.Printf("error indexing new people: %v\n", err)
 			}
 		}
 		return nil

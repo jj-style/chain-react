@@ -2,4 +2,10 @@ version: '3'
 services:
   # TODO server (when mysql repo implemented)
   # TODO mariadb
-  
+  meilisearch:
+    image: getmeili/meilisearch:v1.1
+    container_name: meilisearch
+    environment:
+      - MEILI_NO_ANALYTICS=true
+    ports:
+      - 7700:7700
