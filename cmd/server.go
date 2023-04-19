@@ -65,13 +65,15 @@ to quickly create a Cobra application.`,
 		go g.Bfs(31, 48, paths)
 		for p := range paths {
 			// TODO - ignore paths that hop via the same movie
-			fmt.Println("***********")
-			for idx, ve := range p {
-				if idx == 0 {
-					continue
-				}
+			for _, ve := range p[1:] {
 				fmt.Printf("%s:%s <=%s=> %s:%s\n", ve.Edge.Weight.src.Name, ve.Edge.Weight.src.Character, ve.Edge.Weight.src.Title, ve.Edge.Weight.dest.Name, ve.Edge.Weight.dest.Character)
 			}
+		}
+
+		if chainErr := g.Verify(graph.Chain{31, 4, 3, 48}); chainErr != nil {
+			fmt.Printf("invalid chain: %v\n", chainErr)
+		} else {
+			fmt.Println("valid chain")
 		}
 	},
 }
