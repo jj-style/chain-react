@@ -1,10 +1,14 @@
 import { createBrowserRouter } from "react-router-dom";
-import { Root } from "./pages";
+import { Root, About } from "./pages";
 
 const Router = createBrowserRouter([
   {
     path: "/",
     element: <Root />,
+  },
+  {
+    path: "/about",
+    element: <About />,
   },
 ]);
 
