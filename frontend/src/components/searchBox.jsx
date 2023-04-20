@@ -41,6 +41,7 @@ const MySearchBox = ({ currentRefinement, refine }) => (
     value={currentRefinement}
     onChange={(e) => refine(e.currentTarget.value)}
     placeholder="find actors..."
+    autoFocus={true}
   ></FormControl>
 );
 
