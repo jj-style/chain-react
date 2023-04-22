@@ -35,15 +35,17 @@ const connectWithQuery = createConnector({
   },
 });
 
-const MySearchBox = ({ currentRefinement, refine }) => (
-  <FormControl
-    type="input"
-    value={currentRefinement}
-    onChange={(e) => refine(e.currentTarget.value)}
-    placeholder="find actors..."
-    autoFocus={true}
-  ></FormControl>
-);
+const MySearchBox = ({ currentRefinement, refine, ...props }) => {
+  return (
+    <FormControl
+      type="input"
+      value={currentRefinement}
+      onChange={(e) => refine(e.currentTarget.value)}
+      placeholder={props.placeholder ?? ""}
+      autoFocus={true}
+    ></FormControl>
+  );
+};
 
 const ConnectedSearchBox = connectWithQuery(MySearchBox);
 

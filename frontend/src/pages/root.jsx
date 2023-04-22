@@ -8,6 +8,7 @@ import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/esm/Container";
 import CloseButton from "react-bootstrap/CloseButton";
 import Row from "react-bootstrap/Row";
+
 const Root = () => {
   const searchClient = instantMeiliSearch(
     process.env.REACT_APP_MEILISEARCH_HOST,
@@ -20,6 +21,8 @@ const Root = () => {
 
   const [chain, setChain] = useState([]);
   const [newLink, setNewLink] = useState(null);
+  const [start, setStart] = useState(null);
+  const [end, setEnd] = useState(null);
 
   let addHit = (hit) => {
     setNewLink(null);
@@ -34,8 +37,27 @@ const Root = () => {
     <div id="root">
       <h1>Root</h1>
       <Container>
+        <Row></Row>
         <Row>
-          <ListGroup>
+          <ListGroup className="d-flex justify-content-between">
+            {/* START ACTOR */}
+            {start !== null ? (
+              <ListGroup.Item variant="success d-flex justify-content-between">
+                <span>{start.name}</span>
+                <CloseButton onClick={() => setStart(null)} />
+              </ListGroup.Item>
+            ) : (
+              <InstantSearch indexName="actors" searchClient={searchClient}>
+                <SearchBox placeholder="start with actor" />
+                <Hits
+                  hitComponent={({ hit }) => (
+                    <Hit hit={hit} addHit={(hit) => setStart(hit)} />
+                  )}
+                />
+              </InstantSearch>
+            )}
+
+            {/* ACTOR CHAIN */}
             {chain.map((link, index) => {
               return (
                 <ListGroup.Item
@@ -47,15 +69,34 @@ const Root = () => {
                 </ListGroup.Item>
               );
             })}
+
+            {/* NEW LINK IN CHAIN TEXT FIELD */}
+            {newLink !== null && (
+              <InstantSearch indexName="actors" searchClient={searchClient}>
+                <SearchBox placeholder="find actor..." />
+                <Hits
+                  hitComponent={({ hit }) => <Hit hit={hit} addHit={addHit} />}
+                />
+              </InstantSearch>
+            )}
+
+            {/* END ACTOR */}
+            {end !== null ? (
+              <ListGroup.Item variant="danger d-flex justify-content-between">
+                <span>{end.name}</span>
+                <CloseButton onClick={() => setEnd(null)} />
+              </ListGroup.Item>
+            ) : (
+              <InstantSearch indexName="actors" searchClient={searchClient}>
+                <SearchBox placeholder="end with actor" />
+                <Hits
+                  hitComponent={({ hit }) => (
+                    <Hit hit={hit} addHit={(hit) => setEnd(hit)} />
+                  )}
+                />
+              </InstantSearch>
+            )}
           </ListGroup>
-          {newLink !== null && (
-            <InstantSearch indexName="actors" searchClient={searchClient}>
-              <SearchBox />
-              <Hits
-                hitComponent={({ hit }) => <Hit hit={hit} addHit={addHit} />}
-              />
-            </InstantSearch>
-          )}
         </Row>
         <Row>
           <Button variant="primary" onClick={() => setNewLink("")}>
