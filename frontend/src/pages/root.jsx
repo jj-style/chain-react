@@ -60,8 +60,8 @@ const Root = () => {
   });
 
   useEffect(() => {
-    if (toSet !== null) refetch();
-  }, [toSet]);
+    if (toSet !== null && refetch !== null) refetch();
+  }, [toSet, refetch]);
 
   return (
     <div id="root">
