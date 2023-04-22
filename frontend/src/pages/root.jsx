@@ -2,13 +2,15 @@ import withLayout from "./layout";
 import { InstantSearch, Hits } from "react-instantsearch-dom";
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
 import { SearchBox } from "../components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ListGroup from "react-bootstrap/ListGroup";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/esm/Container";
 import CloseButton from "react-bootstrap/CloseButton";
 import Row from "react-bootstrap/Row";
+import InputGroup from "react-bootstrap/InputGroup";
 import { Shuffle } from "react-bootstrap-icons";
+import { useQuery } from "@tanstack/react-query";
 
 const Root = () => {
   const searchClient = instantMeiliSearch(
@@ -24,6 +26,7 @@ const Root = () => {
   const [newLink, setNewLink] = useState(null);
   const [start, setStart] = useState(null);
   const [end, setEnd] = useState(null);
+  const [toSet, setToSet] = useState(null);
 
   let addHit = (hit) => {
     setNewLink(null);
@@ -34,6 +37,32 @@ const Root = () => {
     setChain((curr) => curr.filter((x) => x.id !== id));
   };
 
+  let randomUrlPath =
+    start === null && end === null
+      ? "/randomActor"
+      : `/randomActorNot/${start !== null ? start.id : end.id}`;
+
+  const { isLoading, error, refetch, data } = useQuery({
+    queryKey: ["getRandomActor"],
+    queryFn: () =>
+      fetch(`http://localhost:8080${randomUrlPath}`)
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("fetched ", data);
+          toSet && toSet(data);
+          return data;
+        }),
+    enabled: false,
+    refetchOnWindowFocus: false,
+    onSettled: () => {
+      setToSet(null);
+    },
+  });
+
+  useEffect(() => {
+    if (toSet !== null) refetch();
+  }, [toSet]);
+
   return (
     <div id="root">
       <h1>Root</h1>
@@ -43,16 +72,31 @@ const Root = () => {
           <ListGroup className="d-flex justify-content-between">
             {/* START ACTOR */}
             {start !== null ? (
-              <ListGroup.Item variant="success d-flex justify-content-between">
-                <span>{start.name}</span>
-                <CloseButton onClick={() => setStart(null)} />
-              </ListGroup.Item>
+              <InputGroup className="">
+                <Button
+                  variant="secondary"
+                  onClick={() => setToSet(() => setStart)}
+                  disabled={isLoading}
+                >
+                  <Shuffle />
+                </Button>
+                <ListGroup.Item
+                  variant="success d-flex justify-content-between"
+                  style={{ flexGrow: 1 }}
+                >
+                  <span>{start.name}</span>
+                  <CloseButton onClick={() => setStart(null)} />
+                </ListGroup.Item>
+              </InputGroup>
             ) : (
               <InstantSearch indexName="actors" searchClient={searchClient}>
                 <SearchBox
                   placeholder="start with actor"
                   button={
-                    <Button variant="secondary">
+                    <Button
+                      variant="secondary"
+                      onClick={() => setToSet(() => setStart)}
+                    >
                       <Shuffle />
                     </Button>
                   }
@@ -90,16 +134,31 @@ const Root = () => {
 
             {/* END ACTOR */}
             {end !== null ? (
-              <ListGroup.Item variant="danger d-flex justify-content-between">
-                <span>{end.name}</span>
-                <CloseButton onClick={() => setEnd(null)} />
-              </ListGroup.Item>
+              <InputGroup className="">
+                <Button
+                  variant="secondary"
+                  onClick={() => setToSet(() => setEnd)}
+                  disabled={isLoading}
+                >
+                  <Shuffle />
+                </Button>
+                <ListGroup.Item
+                  variant="danger d-flex justify-content-between"
+                  style={{ flexGrow: 1 }}
+                >
+                  <span>{end.name}</span>
+                  <CloseButton onClick={() => setEnd(null)} />
+                </ListGroup.Item>
+              </InputGroup>
             ) : (
               <InstantSearch indexName="actors" searchClient={searchClient}>
                 <SearchBox
                   placeholder="end with actor"
                   button={
-                    <Button variant="secondary">
+                    <Button
+                      variant="secondary"
+                      onClick={() => setToSet(() => setEnd)}
+                    >
                       <Shuffle />
                     </Button>
                   }
