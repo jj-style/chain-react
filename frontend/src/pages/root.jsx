@@ -8,6 +8,7 @@ import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/esm/Container";
 import CloseButton from "react-bootstrap/CloseButton";
 import Row from "react-bootstrap/Row";
+import { Shuffle } from "react-bootstrap-icons";
 
 const Root = () => {
   const searchClient = instantMeiliSearch(
@@ -48,7 +49,14 @@ const Root = () => {
               </ListGroup.Item>
             ) : (
               <InstantSearch indexName="actors" searchClient={searchClient}>
-                <SearchBox placeholder="start with actor" />
+                <SearchBox
+                  placeholder="start with actor"
+                  button={
+                    <Button variant="secondary">
+                      <Shuffle />
+                    </Button>
+                  }
+                />
                 <Hits
                   hitComponent={({ hit }) => (
                     <Hit hit={hit} addHit={(hit) => setStart(hit)} />
@@ -88,7 +96,14 @@ const Root = () => {
               </ListGroup.Item>
             ) : (
               <InstantSearch indexName="actors" searchClient={searchClient}>
-                <SearchBox placeholder="end with actor" />
+                <SearchBox
+                  placeholder="end with actor"
+                  button={
+                    <Button variant="secondary">
+                      <Shuffle />
+                    </Button>
+                  }
+                />
                 <Hits
                   hitComponent={({ hit }) => (
                     <Hit hit={hit} addHit={(hit) => setEnd(hit)} />

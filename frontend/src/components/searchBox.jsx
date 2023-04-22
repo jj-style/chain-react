@@ -1,5 +1,6 @@
 import { createConnector } from "react-instantsearch-dom";
 import FormControl from "react-bootstrap/FormControl";
+import InputGroup from "react-bootstrap/InputGroup";
 
 const connectWithQuery = createConnector({
   displayName: "WidgetWithQuery",
@@ -37,13 +38,16 @@ const connectWithQuery = createConnector({
 
 const MySearchBox = ({ currentRefinement, refine, ...props }) => {
   return (
-    <FormControl
-      type="input"
-      value={currentRefinement}
-      onChange={(e) => refine(e.currentTarget.value)}
-      placeholder={props.placeholder ?? ""}
-      autoFocus={true}
-    ></FormControl>
+    <InputGroup>
+      {props.button && props.button}
+      <FormControl
+        type="input"
+        value={currentRefinement}
+        onChange={(e) => refine(e.currentTarget.value)}
+        placeholder={props.placeholder ?? ""}
+        autoFocus={true}
+      ></FormControl>
+    </InputGroup>
   );
 };
 
