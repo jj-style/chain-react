@@ -18,7 +18,7 @@ const Root = () => {
     process.env.REACT_APP_MEILISEARCH_API_KEY,
     {
       placeholderSearch: false,
-      primaryKey: "Id",
+      primaryKey: "id",
     }
   );
 
@@ -186,9 +186,9 @@ const Hit = ({ hit, addHit }) => {
   return (
     <Button
       variant="link"
-      onClick={() => addHit({ name: hit.Name, id: hit.Id })}
+      onClick={() => addHit({ name: hit.name, id: hit.id })}
     >
-      {hit.Name}
+      {hit.name}
     </Button>
   );
 };
