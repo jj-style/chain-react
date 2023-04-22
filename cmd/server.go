@@ -1,14 +1,9 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/jj-style/chain-react/src/config"
-	"github.com/jj-style/chain-react/src/db"
-	"github.com/jj-style/chain-react/src/graph"
+	"github.com/jj-style/chain-react/src/server"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -25,56 +20,8 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cfg := cmd.Context().Value(config.RConfig{}).(config.RConfig)
-
-		credits, err := cfg.Repo.AllCredits()
-		if err != nil {
-			log.Fatalln("getting all credits: ", err)
-		}
-
-		type edge struct {
-			src  db.Credit
-			dest db.Credit
-		}
-
-		g := graph.NewGraph[db.Actor, edge]()
-
-		// add all actors as vertices in graph
-		actors, err := cfg.Repo.AllActors()
-		if err != nil {
-			log.Fatalln("getting all actors: ", err)
-		}
-		for _, a := range actors {
-			g.AddVertex(a.Id, a)
-		}
-
-		creditsByMovieId := lo.GroupBy(credits, func(c db.Credit) int { return c.Movie.Id })
-		for _, c := range credits {
-			// build edge between actor in credit, and every other actor in that movie
-			a := c.Actor
-			for _, oc := range creditsByMovieId[c.Movie.Id] {
-				if oc.Actor == a {
-					// avoid cycles
-					continue
-				}
-				g.AddEdge(a.Id, oc.Actor.Id, edge{src: c, dest: oc})
-			}
-		}
-
-		// paths := make(chan []graph.Element[db.Actor, edge])
-
-		// go g.Bfs(31, 48, paths)
-		// for p := range paths {
-		// 	// TODO - ignore paths that hop via the same movie
-		// 	for _, ve := range p[1:] {
-		// 		fmt.Printf("%s:%s <=%s=> %s:%s\n", ve.Edge.Weight.src.Name, ve.Edge.Weight.src.Character, ve.Edge.Weight.src.Title, ve.Edge.Weight.dest.Name, ve.Edge.Weight.dest.Character)
-		// 	}
-		// }
-
-		if chainErr := g.Verify(graph.Chain{31, 4, 3, 48}); chainErr != nil {
-			fmt.Printf("invalid chain: %v\n", chainErr)
-		} else {
-			fmt.Println("valid chain")
-		}
+		s := server.NewServer(&cfg)
+		s.Router.Run(":8080")
 	},
 }
 

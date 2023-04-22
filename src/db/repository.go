@@ -14,6 +14,8 @@ type Repository interface {
 	AllActors() ([]Actor, error)
 	DeleteActor(id int64) error
 	LatestActor() (*Actor, error)
+	RandomActor() (*Actor, error)
+	RandomActorNotId(int) (*Actor, error)
 
 	// Movies
 	CreateMovie(movie Movie) (*Movie, error)

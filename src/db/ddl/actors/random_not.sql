@@ -1,0 +1,1 @@
+SELECT * FROM actors WHERE id != ? ORDER BY RANDOM() LIMIT 1;
