@@ -26,6 +26,10 @@ var (
 	DELETE_ACTOR_SQL string
 	//go:embed ddl/actors/latest.sql
 	LATEST_ACTOR_SQL string
+	//go:embed ddl/actors/random.sql
+	RANDOM_ACTOR_SQL string
+	//go:embed ddl/actors/random_not.sql
+	RANDOM_ACTOR_NOT_ID_SQL string
 
 	//go:embed ddl/movies/insert.sql
 	INSERT_MOVIE_SQL string
@@ -135,6 +139,26 @@ func (r *SQLiteRepository) LatestActor() (*Actor, error) {
 	}
 	return &actor, nil
 
+}
+
+func (r *SQLiteRepository) RandomActor() (*Actor, error) {
+	row := r.db.QueryRow(RANDOM_ACTOR_SQL)
+
+	var actor Actor
+	if err := row.Scan(&actor.Id, &actor.Name); err != nil {
+		return nil, err
+	}
+	return &actor, nil
+}
+
+func (r *SQLiteRepository) RandomActorNotId(id int) (*Actor, error) {
+	row := r.db.QueryRow(RANDOM_ACTOR_NOT_ID_SQL, id)
+
+	var actor Actor
+	if err := row.Scan(&actor.Id, &actor.Name); err != nil {
+		return nil, err
+	}
+	return &actor, nil
 }
 
 func (r *SQLiteRepository) CreateMovie(movie Movie) (*Movie, error) {
