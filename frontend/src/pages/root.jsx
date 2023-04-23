@@ -5,6 +5,7 @@ import { SearchBox } from "../components";
 import { useEffect, useState } from "react";
 import ListGroup from "react-bootstrap/ListGroup";
 import Button from "react-bootstrap/Button";
+import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Container from "react-bootstrap/esm/Container";
 import CloseButton from "react-bootstrap/CloseButton";
 import Row from "react-bootstrap/Row";
@@ -62,6 +63,19 @@ const Root = () => {
   useEffect(() => {
     if (toSet !== null && refetch !== null) refetch();
   }, [toSet, refetch]);
+
+  let validateChain = () => {
+    if (
+      start === null ||
+      end === null ||
+      chain.filter((x) => x !== null).length < 1
+    ) {
+      return false;
+    }
+    return true;
+  };
+  let validChain = validateChain();
+  console.log(validChain);
 
   return (
     <div id="root">
@@ -173,9 +187,18 @@ const Root = () => {
           </ListGroup>
         </Row>
         <Row>
-          <Button variant="primary" onClick={() => setNewLink("")}>
-            +
-          </Button>
+          <ButtonGroup className="m-0 p-0">
+            <Button variant="outline-primary" onClick={() => setNewLink("")}>
+              +
+            </Button>
+            <Button
+              variant="outline-info"
+              disabled={!validChain}
+              onClick={() => console.log("todo - post")}
+            >
+              verify
+            </Button>
+          </ButtonGroup>
         </Row>
       </Container>
     </div>
