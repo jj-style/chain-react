@@ -74,8 +74,8 @@ const Root = () => {
     }
     return true;
   };
+
   let validChain = validateChain();
-  console.log(validChain);
 
   return (
     <div id="root">
@@ -85,43 +85,13 @@ const Root = () => {
         <Row>
           <ListGroup className="d-flex justify-content-between">
             {/* START ACTOR */}
-            {start !== null ? (
-              <InputGroup className="">
-                <Button
-                  variant="secondary"
-                  onClick={() => setToSet(() => setStart)}
-                  disabled={isLoading}
-                >
-                  <Shuffle />
-                </Button>
-                <ListGroup.Item
-                  variant="success d-flex justify-content-between"
-                  style={{ flexGrow: 1 }}
-                >
-                  <span>{start.name}</span>
-                  <CloseButton onClick={() => setStart(null)} />
-                </ListGroup.Item>
-              </InputGroup>
-            ) : (
-              <InstantSearch indexName="actors" searchClient={searchClient}>
-                <SearchBox
-                  placeholder="start with actor"
-                  button={
-                    <Button
-                      variant="secondary"
-                      onClick={() => setToSet(() => setStart)}
-                    >
-                      <Shuffle />
-                    </Button>
-                  }
-                />
-                <Hits
-                  hitComponent={({ hit }) => (
-                    <Hit hit={hit} addHit={(hit) => setStart(hit)} />
-                  )}
-                />
-              </InstantSearch>
-            )}
+            <StartEnd
+              setToSet={setToSet}
+              currentState={start}
+              setState={setStart}
+              searchClient={searchClient}
+              bgVariant="success"
+            />
 
             {/* ACTOR CHAIN */}
             {chain.map((link, index) => {
@@ -147,43 +117,13 @@ const Root = () => {
             )}
 
             {/* END ACTOR */}
-            {end !== null ? (
-              <InputGroup className="">
-                <Button
-                  variant="secondary"
-                  onClick={() => setToSet(() => setEnd)}
-                  disabled={isLoading}
-                >
-                  <Shuffle />
-                </Button>
-                <ListGroup.Item
-                  variant="danger d-flex justify-content-between"
-                  style={{ flexGrow: 1 }}
-                >
-                  <span>{end.name}</span>
-                  <CloseButton onClick={() => setEnd(null)} />
-                </ListGroup.Item>
-              </InputGroup>
-            ) : (
-              <InstantSearch indexName="actors" searchClient={searchClient}>
-                <SearchBox
-                  placeholder="end with actor"
-                  button={
-                    <Button
-                      variant="secondary"
-                      onClick={() => setToSet(() => setEnd)}
-                    >
-                      <Shuffle />
-                    </Button>
-                  }
-                />
-                <Hits
-                  hitComponent={({ hit }) => (
-                    <Hit hit={hit} addHit={(hit) => setEnd(hit)} />
-                  )}
-                />
-              </InstantSearch>
-            )}
+            <StartEnd
+              setToSet={setToSet}
+              currentState={end}
+              setState={setEnd}
+              searchClient={searchClient}
+              bgVariant="danger"
+            />
           </ListGroup>
         </Row>
         <Row>
@@ -202,6 +142,45 @@ const Root = () => {
         </Row>
       </Container>
     </div>
+  );
+};
+
+const StartEnd = ({
+  setToSet,
+  currentState,
+  setState,
+  searchClient,
+  bgVariant,
+}) => {
+  return currentState !== null ? (
+    <InputGroup className="">
+      <Button variant="secondary" onClick={() => setToSet(() => setState)}>
+        <Shuffle />
+      </Button>
+      <ListGroup.Item
+        variant={`${bgVariant} d-flex justify-content-between`}
+        style={{ flexGrow: 1 }}
+      >
+        <span>{currentState.name}</span>
+        <CloseButton onClick={() => setState(null)} />
+      </ListGroup.Item>
+    </InputGroup>
+  ) : (
+    <InstantSearch indexName="actors" searchClient={searchClient}>
+      <SearchBox
+        placeholder="end with actor"
+        button={
+          <Button variant="secondary" onClick={() => setToSet(() => setState)}>
+            <Shuffle />
+          </Button>
+        }
+      />
+      <Hits
+        hitComponent={({ hit }) => (
+          <Hit hit={hit} addHit={(hit) => setState(hit)} />
+        )}
+      />
+    </InstantSearch>
   );
 };
 
