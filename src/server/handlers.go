@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jj-style/chain-react/src/db"
 	"github.com/jj-style/chain-react/src/graph"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -47,13 +48,14 @@ func (s *Server) handleVerify(c *gin.Context) {
 	type request struct {
 		Chain []int `json:"chain"`
 	}
+	type responseEdge struct {
+		Src  db.Credit `json:"src"`
+		Dest db.Credit `json:"dest"`
+	}
 	type response struct {
-		Valid bool   `json:"valid"`
-		Error string `json:"error"`
-		Chain []struct {
-			Src  db.Credit `json:"src"`
-			Dest db.Credit `json:"dest"`
-		} `json:"chain"`
+		Valid bool           `json:"valid"`
+		Error string         `json:"error"`
+		Chain []responseEdge `json:"chain"`
 	}
 
 	var req request
@@ -70,11 +72,25 @@ func (s *Server) handleVerify(c *gin.Context) {
 		return
 	}
 
-	err = s.Graph.Verify(graph.Chain(req.Chain))
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid request: %v", err)})
-		return
+	edges, err := s.Graph.VerifyWithEdges(graph.Chain(req.Chain))
+	edgeResponses := make([]responseEdge, 0, len(edges))
+	for _, e := range edges {
+		edgeResponses = append(edgeResponses, responseEdge{
+			Src:  e.Weight.Src,
+			Dest: e.Weight.Dest,
+		})
 	}
 
-	c.JSON(http.StatusOK, response{Valid: true})
+	var errs = ""
+	var code = http.StatusOK
+	if err != nil {
+		errs = err.Error()
+		code = http.StatusBadRequest
+	}
+
+	c.JSON(code, response{
+		Valid: true,
+		Chain: edgeResponses,
+		Error: errs,
+	})
 }

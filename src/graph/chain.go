@@ -30,3 +30,26 @@ func (g *Graph[T, E]) Verify(c Chain) error {
 
 	return nil
 }
+
+func (g *Graph[T, E]) VerifyWithEdges(c Chain) ([]*Edge[T, E], error) {
+	edges := make([]*Edge[T, E], 0, len(c)-1)
+	if len(c) < 2 {
+		return edges, ErrChainLength
+	}
+
+	v, exists := g.Vertices[c[0]]
+	if !exists {
+		return edges, ErrVertexNotFound
+	}
+
+	for _, id := range c[1:] {
+		e, exists := v.Edges[id]
+		if !exists {
+			return edges, ErrNeighbourNotFound
+		}
+		edges = append(edges, e)
+		v = e.Vertex
+	}
+
+	return edges, nil
+}

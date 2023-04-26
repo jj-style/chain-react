@@ -11,8 +11,8 @@ import (
 
 type Vertex db.Actor
 type Edge struct {
-	src  db.Credit
-	dest db.Credit
+	Src  db.Credit
+	Dest db.Credit
 }
 
 func LoadGraph(cfg *config.RConfig) *graph.Graph[Vertex, Edge] {
@@ -41,7 +41,7 @@ func LoadGraph(cfg *config.RConfig) *graph.Graph[Vertex, Edge] {
 				// avoid cycles
 				continue
 			}
-			g.AddEdge(a.Id, oc.Actor.Id, Edge{src: c, dest: oc})
+			g.AddEdge(a.Id, oc.Actor.Id, Edge{Src: c, Dest: oc})
 		}
 	}
 	return g
