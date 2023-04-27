@@ -83,13 +83,15 @@ func (s *Server) handleVerify(c *gin.Context) {
 
 	var errs = ""
 	var code = http.StatusOK
+	var valid = true
 	if err != nil {
 		errs = err.Error()
 		code = http.StatusBadRequest
+		valid = false
 	}
 
 	c.JSON(code, response{
-		Valid: true,
+		Valid: valid,
 		Chain: edgeResponses,
 		Error: errs,
 	})

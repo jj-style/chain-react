@@ -11,7 +11,8 @@ import CloseButton from "react-bootstrap/CloseButton";
 import Row from "react-bootstrap/Row";
 import InputGroup from "react-bootstrap/InputGroup";
 import { Shuffle } from "react-bootstrap-icons";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 
 const Root = () => {
   const searchClient = instantMeiliSearch(
@@ -22,6 +23,8 @@ const Root = () => {
       primaryKey: "id",
     }
   );
+
+  const queryClient = useQueryClient();
 
   const [chain, setChain] = useState([]);
   const [newLink, setNewLink] = useState(null);
@@ -45,18 +48,17 @@ const Root = () => {
 
   const { isLoading, error, refetch, data } = useQuery({
     queryKey: ["getRandomActor"],
-    queryFn: () =>
-      fetch(`http://localhost:8080${randomUrlPath}`)
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("fetched ", data);
-          toSet && toSet(data);
-          return data;
-        }),
+    queryFn: async () => {
+      const { data } = await axios.get(`http://localhost:8080${randomUrlPath}`);
+      console.log("fetched ", data);
+      toSet && toSet(data);
+      return data;
+    },
     enabled: false,
     refetchOnWindowFocus: false,
     onSettled: () => {
       setToSet(null);
+      queryClient.invalidateQueries("getRandomActor");
     },
   });
 
@@ -76,6 +78,28 @@ const Root = () => {
   };
 
   let validChain = validateChain();
+
+  const { mutate, isPostLoading } = useMutation(postChain, {
+    onSuccess: (data) => {
+      console.log("data", data);
+    },
+    onError: (err) => {
+      console.log("error", err.response.data);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries("create");
+    },
+  });
+
+  const doPostChain = () => {
+    var x = [
+      start.id,
+      ...chain.filter((x) => x !== null).map((x) => x.id),
+      end.id,
+    ];
+    console.log("sending", x);
+    mutate({ chain: x });
+  };
 
   return (
     <div id="root">
@@ -134,7 +158,7 @@ const Root = () => {
             <Button
               variant="outline-info"
               disabled={!validChain}
-              onClick={() => console.log("todo - post")}
+              onClick={() => doPostChain()}
             >
               verify
             </Button>
@@ -193,6 +217,14 @@ const Hit = ({ hit, addHit }) => {
       {hit.name}
     </Button>
   );
+};
+
+const postChain = async (data) => {
+  const { data: response } = await axios.post(
+    "http://localhost:8080/verify",
+    data
+  );
+  return response;
 };
 
 export default withLayout(Root);
