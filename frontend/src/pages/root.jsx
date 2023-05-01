@@ -1,7 +1,7 @@
 import withLayout from "./layout";
 import { InstantSearch, Hits } from "react-instantsearch-dom";
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
-import { SearchBox } from "../components";
+import { SearchBox, ChainGraph } from "../components";
 import { useEffect, useState } from "react";
 import ListGroup from "react-bootstrap/ListGroup";
 import Button from "react-bootstrap/Button";
@@ -38,6 +38,48 @@ const Root = () => {
     setStart({ name: "Mark Hamill", id: 2 });
     setEnd({ name: "Harrison Ford", id: 3 });
     setChain([{ name: "Carrie Fisher", id: 4 }]);
+    setVerification({
+      valid: true,
+      error: "",
+      chain: [
+        {
+          src: {
+            id: 2,
+            name: "Mark Hamill",
+            Id: 2294,
+            Title: "Jay and Silent Bob Strike Back",
+            CreditId: "52fe434bc3a36847f8049419",
+            Character: "Cocknocker",
+          },
+          dest: {
+            id: 4,
+            name: "Carrie Fisher",
+            Id: 2294,
+            Title: "Jay and Silent Bob Strike Back",
+            CreditId: "52fe434bc3a36847f804940d",
+            Character: "Nun",
+          },
+        },
+        {
+          src: {
+            id: 4,
+            name: "Carrie Fisher",
+            Id: 74849,
+            Title: "The Star Wars Holiday Special",
+            CreditId: "52fe48e1c3a368484e10fbdb",
+            Character: "Princess Leia Organa",
+          },
+          dest: {
+            id: 3,
+            name: "Harrison Ford",
+            Id: 74849,
+            Title: "The Star Wars Holiday Special",
+            CreditId: "52fe48e1c3a368484e10fbcf",
+            Character: "Han Solo",
+          },
+        },
+      ],
+    });
   }, []);
 
   // add a search hit to the chain
@@ -189,6 +231,11 @@ const Root = () => {
             </Button>
           </ButtonGroup>
         </Row>
+        {verification?.valid && (
+          <Row>
+            <ChainGraph data={verification} />
+          </Row>
+        )}
       </Container>
     </div>
   );
