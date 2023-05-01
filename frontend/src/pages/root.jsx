@@ -142,7 +142,11 @@ const Root = () => {
                   key={index}
                   className="d-flex justify-content-between"
                   variant={
-                    index < verification?.chain?.length ? "success" : null
+                    verification === null
+                      ? null
+                      : index < verification?.chain?.length
+                      ? "success"
+                      : "danger"
                   }
                 >
                   <span>{link.name}</span>
