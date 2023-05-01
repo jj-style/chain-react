@@ -31,21 +31,33 @@ const Root = () => {
   const [start, setStart] = useState(null);
   const [end, setEnd] = useState(null);
   const [toSet, setToSet] = useState(null);
+  const [verification, setVerification] = useState(null);
 
+  // dev state init
+  useEffect(() => {
+    setStart({ name: "Mark Hamill", id: 2 });
+    setEnd({ name: "Harrison Ford", id: 3 });
+    setChain([{ name: "Carrie Fisher", id: 4 }]);
+  }, []);
+
+  // add a search hit to the chain
   let addHit = (hit) => {
     setNewLink(null);
     setChain((curr) => [...curr, hit]);
   };
 
+  // remove a link from the chain by id
   let removeLink = (id) => {
     setChain((curr) => curr.filter((x) => x.id !== id));
   };
 
+  // random url based on whether start/end are selected
   let randomUrlPath =
     start === null && end === null
       ? "/randomActor"
       : `/randomActorNot/${start !== null ? start.id : end.id}`;
 
+  // get random actor hook
   const { isLoading, error, refetch, data } = useQuery({
     queryKey: ["getRandomActor"],
     queryFn: async () => {
@@ -62,10 +74,12 @@ const Root = () => {
     },
   });
 
+  // when toSet changes, fetch a random actor to put into the toSet function
   useEffect(() => {
     if (toSet !== null && refetch !== null) refetch();
   }, [toSet, refetch]);
 
+  // get whether chain is valid to send to server for verification
   let validateChain = () => {
     if (
       start === null ||
@@ -79,27 +93,31 @@ const Root = () => {
 
   let validChain = validateChain();
 
+  // hook for posting chain for verification
   const { mutate, isPostLoading } = useMutation(postChain, {
     onSuccess: (data) => {
-      console.log("data", data);
+      setVerification(data);
     },
     onError: (err) => {
-      console.log("error", err.response.data);
+      //console.log("error", err.response.data);
+      setVerification(err.response.data);
     },
     onSettled: () => {
       queryClient.invalidateQueries("create");
     },
   });
 
+  // callback to post the chain for verification
   const doPostChain = () => {
     var x = [
       start.id,
       ...chain.filter((x) => x !== null).map((x) => x.id),
       end.id,
     ];
-    console.log("sending", x);
     mutate({ chain: x });
   };
+
+  console.log("verification", verification);
 
   return (
     <div id="root">
@@ -123,6 +141,9 @@ const Root = () => {
                 <ListGroup.Item
                   key={index}
                   className="d-flex justify-content-between"
+                  variant={
+                    index < verification?.chain?.length ? "success" : null
+                  }
                 >
                   <span>{link.name}</span>
                   <CloseButton onClick={() => removeLink(link.id)} />
@@ -146,7 +167,7 @@ const Root = () => {
               currentState={end}
               setState={setEnd}
               searchClient={searchClient}
-              bgVariant="danger"
+              bgVariant={verification?.valid ? "success" : "danger"}
             />
           </ListGroup>
         </Row>
@@ -169,6 +190,7 @@ const Root = () => {
   );
 };
 
+// Component for start/end of chain
 const StartEnd = ({
   setToSet,
   currentState,
@@ -208,6 +230,7 @@ const StartEnd = ({
   );
 };
 
+// Render each item returned by search
 const Hit = ({ hit, addHit }) => {
   return (
     <Button
@@ -219,6 +242,7 @@ const Hit = ({ hit, addHit }) => {
   );
 };
 
+// helper to post the chain for verification
 const postChain = async (data) => {
   const { data: response } = await axios.post(
     "http://localhost:8080/verify",
