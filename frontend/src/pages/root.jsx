@@ -34,53 +34,53 @@ const Root = () => {
   const [verification, setVerification] = useState(null);
 
   // dev state init
-  useEffect(() => {
-    setStart({ name: "Mark Hamill", id: 2 });
-    setEnd({ name: "Harrison Ford", id: 3 });
-    setChain([{ name: "Carrie Fisher", id: 4 }]);
-    setVerification({
-      valid: true,
-      error: "",
-      chain: [
-        {
-          src: {
-            id: 2,
-            name: "Mark Hamill",
-            Id: 2294,
-            Title: "Jay and Silent Bob Strike Back",
-            CreditId: "52fe434bc3a36847f8049419",
-            Character: "Cocknocker",
-          },
-          dest: {
-            id: 4,
-            name: "Carrie Fisher",
-            Id: 2294,
-            Title: "Jay and Silent Bob Strike Back",
-            CreditId: "52fe434bc3a36847f804940d",
-            Character: "Nun",
-          },
-        },
-        {
-          src: {
-            id: 4,
-            name: "Carrie Fisher",
-            Id: 74849,
-            Title: "The Star Wars Holiday Special",
-            CreditId: "52fe48e1c3a368484e10fbdb",
-            Character: "Princess Leia Organa",
-          },
-          dest: {
-            id: 3,
-            name: "Harrison Ford",
-            Id: 74849,
-            Title: "The Star Wars Holiday Special",
-            CreditId: "52fe48e1c3a368484e10fbcf",
-            Character: "Han Solo",
-          },
-        },
-      ],
-    });
-  }, []);
+  // useEffect(() => {
+  //   setStart({ name: "Mark Hamill", id: 2 });
+  //   setEnd({ name: "Harrison Ford", id: 3 });
+  //   setChain([{ name: "Carrie Fisher", id: 4 }]);
+  //   setVerification({
+  //     valid: true,
+  //     error: "",
+  //     chain: [
+  //       {
+  //         src: {
+  //           id: 2,
+  //           name: "Mark Hamill",
+  //           Id: 2294,
+  //           Title: "Jay and Silent Bob Strike Back",
+  //           CreditId: "52fe434bc3a36847f8049419",
+  //           Character: "Cocknocker",
+  //         },
+  //         dest: {
+  //           id: 4,
+  //           name: "Carrie Fisher",
+  //           Id: 2294,
+  //           Title: "Jay and Silent Bob Strike Back",
+  //           CreditId: "52fe434bc3a36847f804940d",
+  //           Character: "Nun",
+  //         },
+  //       },
+  //       {
+  //         src: {
+  //           id: 4,
+  //           name: "Carrie Fisher",
+  //           Id: 74849,
+  //           Title: "The Star Wars Holiday Special",
+  //           CreditId: "52fe48e1c3a368484e10fbdb",
+  //           Character: "Princess Leia Organa",
+  //         },
+  //         dest: {
+  //           id: 3,
+  //           name: "Harrison Ford",
+  //           Id: 74849,
+  //           Title: "The Star Wars Holiday Special",
+  //           CreditId: "52fe48e1c3a368484e10fbcf",
+  //           Character: "Han Solo",
+  //         },
+  //       },
+  //     ],
+  //   });
+  // }, []);
 
   // add a search hit to the chain
   let addHit = (hit) => {
@@ -175,6 +175,7 @@ const Root = () => {
               setState={setStart}
               searchClient={searchClient}
               bgVariant="success"
+              placeholder="start with actor"
             />
 
             {/* ACTOR CHAIN */}
@@ -214,6 +215,7 @@ const Root = () => {
               setState={setEnd}
               searchClient={searchClient}
               bgVariant={verification?.valid ? "success" : "danger"}
+              placeholder="end with actor"
             />
           </ListGroup>
         </Row>
@@ -248,6 +250,7 @@ const StartEnd = ({
   setState,
   searchClient,
   bgVariant,
+  placeholder,
 }) => {
   return currentState !== null ? (
     <InputGroup className="">
@@ -265,7 +268,7 @@ const StartEnd = ({
   ) : (
     <InstantSearch indexName="actors" searchClient={searchClient}>
       <SearchBox
-        placeholder="end with actor"
+        placeholder={placeholder}
         button={
           <Button variant="secondary" onClick={() => setToSet(() => setState)}>
             <Shuffle />
