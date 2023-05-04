@@ -165,89 +165,85 @@ const Root = () => {
   };
 
   return (
-    <div id="root">
-      <h1>Root</h1>
-      <Container>
-        <Row></Row>
-        <Row>
-          <ListGroup className="d-flex justify-content-between">
-            {/* START ACTOR */}
-            <StartEnd
-              setToSet={setToSet}
-              currentState={start}
-              setState={setStart}
-              searchClient={searchClient}
-              bgVariant="success"
-              placeholder="start with actor"
-            />
+    <>
+      <Row>
+        <ListGroup className="d-flex justify-content-between">
+          {/* START ACTOR */}
+          <StartEnd
+            setToSet={setToSet}
+            currentState={start}
+            setState={setStart}
+            searchClient={searchClient}
+            bgVariant="success"
+            placeholder="start with actor"
+          />
 
-            {/* ACTOR CHAIN */}
-            {chain.map((link, index) => {
-              return (
-                <ListGroup.Item
-                  key={index}
-                  className="d-flex justify-content-between"
-                  variant={
-                    verification === null
-                      ? null
-                      : index < verification?.chain?.length
-                      ? "success"
-                      : "danger"
-                  }
-                >
-                  <span>{link.name}</span>
-                  <CloseButton onClick={() => removeLink(link.id)} />
-                </ListGroup.Item>
-              );
-            })}
+          {/* ACTOR CHAIN */}
+          {chain.map((link, index) => {
+            return (
+              <ListGroup.Item
+                key={index}
+                className="d-flex justify-content-between"
+                variant={
+                  verification === null
+                    ? null
+                    : index < verification?.chain?.length
+                    ? "success"
+                    : "danger"
+                }
+              >
+                <span>{link.name}</span>
+                <CloseButton onClick={() => removeLink(link.id)} />
+              </ListGroup.Item>
+            );
+          })}
 
-            {/* NEW LINK IN CHAIN TEXT FIELD */}
-            {newLink !== null && (
-              <InstantSearch indexName="actors" searchClient={searchClient}>
-                <SearchBox placeholder="find actor..." />
-                <Hits
-                  hitComponent={({ hit }) => <Hit hit={hit} addHit={addHit} />}
-                />
-              </InstantSearch>
-            )}
+          {/* NEW LINK IN CHAIN TEXT FIELD */}
+          {newLink !== null && (
+            <InstantSearch indexName="actors" searchClient={searchClient}>
+              <SearchBox placeholder="find actor..." />
+              <Hits
+                hitComponent={({ hit }) => <Hit hit={hit} addHit={addHit} />}
+              />
+            </InstantSearch>
+          )}
 
-            {/* END ACTOR */}
-            <StartEnd
-              setToSet={setToSet}
-              currentState={end}
-              setState={setEnd}
-              searchClient={searchClient}
-              bgVariant={verification?.valid ? "success" : "danger"}
-              placeholder="end with actor"
-            />
-          </ListGroup>
-        </Row>
-        <Row>
-          <ButtonGroup className="m-0 p-0">
-            <Button variant="outline-primary" onClick={() => setNewLink("")}>
-              +
-            </Button>
-            <Button
-              variant="outline-info"
-              disabled={!validChain}
-              onClick={() => doPostChain()}
-            >
-              verify
-            </Button>
-          </ButtonGroup>
-        </Row>
-        {verification?.valid && (
-          <>
-            <Row>
-              <Button onClick={() => alert("todo")}>View all</Button>
-            </Row>
-            <Row>
-              <ChainGraph data={verification} />
-            </Row>
-          </>
-        )}
-      </Container>
-    </div>
+          {/* END ACTOR */}
+          <StartEnd
+            setToSet={setToSet}
+            currentState={end}
+            setState={setEnd}
+            searchClient={searchClient}
+            bgVariant={verification?.valid ? "success" : "danger"}
+            placeholder="end with actor"
+          />
+        </ListGroup>
+      </Row>
+      <Row>
+        <ButtonGroup className="m-0 p-0">
+          <Button variant="outline-primary" onClick={() => setNewLink("")}>
+            +
+          </Button>
+          <Button
+            variant="outline-info"
+            disabled={!validChain}
+            onClick={() => doPostChain()}
+          >
+            verify
+          </Button>
+        </ButtonGroup>
+      </Row>
+      {verification?.valid && (
+        <>
+          <Row>
+            <Button onClick={() => alert("todo")}>View all</Button>
+          </Row>
+          <Row>
+            <ChainGraph data={verification} />
+          </Row>
+        </>
+      )}
+    </>
   );
 };
 
@@ -313,4 +309,4 @@ const postChain = async (data) => {
   return response;
 };
 
-export default withLayout(Root);
+export default withLayout(Root, "Home");

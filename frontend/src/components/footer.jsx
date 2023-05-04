@@ -5,7 +5,10 @@ import tmdbLogo from "../assets/tmdb.svg";
 
 const Footer = () => {
   return (
-    <footer className="footer mt-auto py-3 bg-light fixed-bottom">
+    <footer
+      className="footer mt-auto py-3 bg-light w-100"
+      style={{ bottom: 0, left: 0, position: "fixed" }}
+    >
       <Container className="d-flex justify-content-between">
         <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">
           <Image src={tmdbLogo} width={48} />
