@@ -121,6 +121,11 @@ const Root = () => {
     if (toSet !== null && refetch !== null) refetch();
   }, [toSet, refetch]);
 
+  // when any change made to chain, remove verification data
+  useEffect(() => {
+    setVerification(null);
+  }, [start, end, chain]);
+
   // get whether chain is valid to send to server for verification
   let validateChain = () => {
     if (
@@ -158,8 +163,6 @@ const Root = () => {
     ];
     mutate({ chain: x });
   };
-
-  console.log("verification", verification);
 
   return (
     <div id="root">
@@ -234,9 +237,14 @@ const Root = () => {
           </ButtonGroup>
         </Row>
         {verification?.valid && (
-          <Row>
-            <ChainGraph data={verification} />
-          </Row>
+          <>
+            <Row>
+              <Button onClick={() => alert("todo")}>View all</Button>
+            </Row>
+            <Row>
+              <ChainGraph data={verification} />
+            </Row>
+          </>
         )}
       </Container>
     </div>
