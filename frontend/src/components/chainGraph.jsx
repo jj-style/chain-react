@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Graph from "graphology";
+import Graph, { MultiGraph } from "graphology";
 import {
   SigmaContainer,
   useLoadGraph,
@@ -16,34 +16,38 @@ import { useLayoutCircular } from "@react-sigma/layout-circular";
 
 const LoadGraph = ({ data }) => {
   const loadGraph = useLoadGraph();
-  const { positions, assign } = useLayoutCircular();
+  const { positions, assign } = useLayoutRandom();
 
   useEffect(() => {
-    const graph = new Graph();
+    const graph = new MultiGraph();
 
-    data?.chain?.map((edge, index) => {
-      if (index === 0) {
-        graph.addNode(edge.src.id, {
-          x: 0,
-          y: 0,
-          size: 15,
-          label: edge.src.name,
-          data: edge.src,
-        });
-      }
-      graph.addNode(edge.dest.id, {
-        x: 0,
-        y: 0,
-        size: 15,
-        label: edge.dest.name,
-        data: edge.dest,
+    data?.chains?.forEach((chain) => {
+      chain?.map((edge, index) => {
+        if (!graph.hasNode(edge.src.id)) {
+          graph.addNode(edge.src.id, {
+            x: 0,
+            y: 0,
+            size: 15,
+            label: edge.src.name,
+            data: edge.src,
+          });
+        }
+        if (!graph.hasNode(edge.dest.id)) {
+          graph.addNode(edge.dest.id, {
+            x: 0,
+            y: 0,
+            size: 15,
+            label: edge.dest.name,
+            data: edge.dest,
+          });
+        }
+        graph.addEdge(edge.src.id, edge.dest.id, { label: edge.src.Title });
       });
-      graph.addEdge(edge.src.id, edge.dest.id, { label: edge.src.Title });
     });
 
     loadGraph(graph);
     assign();
-  }, [loadGraph, assign]);
+  }, [loadGraph, assign, data]);
 
   const registerEvents = useRegisterEvents();
   const sigma = useSigma();
@@ -93,6 +97,7 @@ const ChainGraph = ({ data }) => {
       className="w-100"
       style={{ height: "500px", width: "500px" }}
       settings={{ renderEdgeLabels: true }}
+      graph={MultiGraph}
     >
       <LoadGraph data={data} />
       <ControlsContainer position={"bottom-right"}>

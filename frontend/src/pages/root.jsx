@@ -32,6 +32,7 @@ const Root = () => {
   const [end, setEnd] = useState(null);
   const [toSet, setToSet] = useState(null);
   const [verification, setVerification] = useState(null);
+  const [chains, setChains] = useState(null);
 
   // dev state init
   // useEffect(() => {
@@ -124,6 +125,7 @@ const Root = () => {
   // when any change made to chain, remove verification data
   useEffect(() => {
     setVerification(null);
+    setChains(null);
   }, [start, end, chain]);
 
   // get whether chain is valid to send to server for verification
@@ -154,6 +156,21 @@ const Root = () => {
     },
   });
 
+  const { mutate: mutateAllChains, isAllChainsLoading } = useMutation(
+    postGetAllChains,
+    {
+      onSuccess: (data) => {
+        setChains(data);
+      },
+      onError: (err) => {
+        console.log("error", err.response.data);
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries("chains");
+      },
+    }
+  );
+
   // callback to post the chain for verification
   const doPostChain = () => {
     var x = [
@@ -162,6 +179,11 @@ const Root = () => {
       end.id,
     ];
     mutate({ chain: x });
+  };
+
+  // callback to get all chain data
+  const doPostAllChains = () => {
+    mutateAllChains({ start: start.id, end: end.id });
   };
 
   return (
@@ -235,11 +257,19 @@ const Root = () => {
       </Row>
       {verification?.valid && (
         <>
+          {chains === null && (
+            <Row>
+              <Button onClick={() => doPostAllChains()}>View all</Button>
+            </Row>
+          )}
           <Row>
-            <Button onClick={() => alert("todo")}>View all</Button>
-          </Row>
-          <Row>
-            <ChainGraph data={verification} />
+            <ChainGraph
+              data={
+                chains?.chains?.length > 0
+                  ? chains
+                  : { chains: [verification.chain] }
+              }
+            />
           </Row>
         </>
       )}
@@ -304,6 +334,14 @@ const Hit = ({ hit, addHit }) => {
 const postChain = async (data) => {
   const { data: response } = await axios.post(
     "http://localhost:8080/verify",
+    data
+  );
+  return response;
+};
+
+const postGetAllChains = async (data) => {
+  const { data: response } = await axios.post(
+    "http://localhost:8080/chains",
     data
   );
   return response;

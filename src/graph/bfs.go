@@ -11,6 +11,14 @@ type Element[T, U any] struct {
 }
 
 func (g *Graph[T, U]) Bfs(src, dest int, found chan<- []Element[T, U]) {
+	g.bfs(src, dest, found, func(e1 []Element[T, U], e2 *Edge[T, U]) bool { return false })
+}
+
+func (g *Graph[T, U]) BfsWithNeighbourFilter(src, dest int, found chan<- []Element[T, U], neighbourFilter func([]Element[T, U], *Edge[T, U]) bool) {
+	g.bfs(src, dest, found, neighbourFilter)
+}
+
+func (g *Graph[T, U]) bfs(src, dest int, found chan<- []Element[T, U], neighbourFilter func([]Element[T, U], *Edge[T, U]) bool) {
 	defer close(found)
 
 	queue := [][]Element[T, U]{}
@@ -34,6 +42,9 @@ func (g *Graph[T, U]) Bfs(src, dest int, found chan<- []Element[T, U]) {
 		// for all adjacent vertices to last, if not visited, add to queue
 		for adj, e := range g.NeighboursMap(last.Id) {
 			if !lo.ContainsBy(path, func(item Element[T, U]) bool {
+				if neighbourFilter(path, e) {
+					return true
+				}
 				return item.Id == adj
 			}) {
 				newpath := utils.Clone(path)
