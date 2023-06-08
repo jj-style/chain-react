@@ -186,6 +186,8 @@ const Root = () => {
     mutateAllChains({ start: start.id, end: end.id });
   };
 
+  console.log(verification);
+
   return (
     <>
       <Row>
@@ -323,9 +325,9 @@ const Hit = ({ hit, addHit }) => {
   return (
     <Button
       variant="link"
-      onClick={() => addHit({ name: hit.name, id: hit.id })}
+      onClick={() => addHit({ name: hit.Name, id: hit.Id })}
     >
-      {hit.name}
+      {hit.Name}
     </Button>
   );
 };
