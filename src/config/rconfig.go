@@ -8,6 +8,7 @@ import (
 	"github.com/jj-style/chain-react/src/tmdb"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/meilisearch/meilisearch-go"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -19,19 +20,30 @@ type RConfig struct {
 }
 
 func NewRuntimeConfig(c *Config) RConfig {
-	dbs, err := sql.Open(c.Db.Driver, c.Db.Uri)
-	if err != nil {
-		log.Fatalln(err)
-	}
+	var repo db.Repository
 
-	_, err = dbs.Exec("PRAGMA foreign_keys = ON;")
-	if err != nil {
-		log.Fatalln(err)
-	}
+	switch c.Db.Driver {
+	case "neo4j":
+		driver, err := neo4j.NewDriverWithContext(c.Db.Uri, neo4j.BasicAuth(c.Db.Username, c.Db.Password, ""))
+		if err != nil {
+			log.Fatalln("opening neo4j database driver: ", err)
+		}
+		repo = db.NewNeo4jRepository(driver)
+	default:
+		dbs, err := sql.Open(c.Db.Driver, c.Db.Uri)
+		if err != nil {
+			log.Fatalln(err)
+		}
 
-	repo := db.NewSQLiteRepository(dbs)
-	if err := repo.Migrate(); err != nil {
-		log.Fatalln("migrating db: ", err)
+		_, err = dbs.Exec("PRAGMA foreign_keys = ON;")
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		repo = db.NewSQLiteRepository(dbs)
+		if err := repo.Migrate(); err != nil {
+			log.Fatalln("migrating db: ", err)
+		}
 	}
 
 	t := tmdb.NewClient(c.Tmdb.ApiKey)

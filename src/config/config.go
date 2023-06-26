@@ -11,8 +11,10 @@ type tmdbConfig struct {
 }
 
 type dbConfig struct {
-	Driver string `mapstructure:"driver"`
-	Uri    string `mapstructure:"uri"`
+	Driver   string `mapstructure:"driver"`
+	Uri      string `mapstructure:"uri"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
 }
 
 type meilisearchConfig struct {

@@ -7,6 +7,20 @@ services:
     container_name: meilisearch
     environment:
       - MEILI_NO_ANALYTICS=true
-      - MEILI_MASTER_KEY=-kgRbVlra8EI36A0fhwgYr9cL50OGtRGah_-XLbB3fA
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
     ports:
       - 0.0.0.0:7700:7700
+  neo4j:
+    image: neo4j
+    container_name: neo4j
+    ports:
+      - 7474:7474
+      - 7687:7687
+    restart: unless-stopped
+    volumes:
+      - ./plugins:/var/lib/neo4j/plugins 
+    environment:
+      - NEO4J_PLUGINS='["graph-data-science"]'
+      - NEO4J_AUTH=none
+      - NEO4J_dbms_security_procedures_allowlist=gds.*
+      - NEO4J_dbms_security_procedures_unrestricted=gds.*
