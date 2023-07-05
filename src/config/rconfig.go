@@ -1,8 +1,6 @@
 package config
 
 import (
-	"database/sql"
-
 	"github.com/jj-style/chain-react/src/db"
 	"github.com/jj-style/chain-react/src/search"
 	"github.com/jj-style/chain-react/src/tmdb"
@@ -21,7 +19,6 @@ type RConfig struct {
 
 func NewRuntimeConfig(c *Config) RConfig {
 	var repo db.Repository
-
 	switch c.Db.Driver {
 	case "neo4j":
 		driver, err := neo4j.NewDriverWithContext(c.Db.Uri, neo4j.BasicAuth(c.Db.Username, c.Db.Password, ""))
@@ -30,20 +27,7 @@ func NewRuntimeConfig(c *Config) RConfig {
 		}
 		repo = db.NewNeo4jRepository(driver)
 	default:
-		dbs, err := sql.Open(c.Db.Driver, c.Db.Uri)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		_, err = dbs.Exec("PRAGMA foreign_keys = ON;")
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		repo = db.NewSQLiteRepository(dbs)
-		if err := repo.Migrate(); err != nil {
-			log.Fatalln("migrating db: ", err)
-		}
+		log.Fatalf("unknown DB driver: %s", c.Db.Driver)
 	}
 
 	t := tmdb.NewClient(c.Tmdb.ApiKey)

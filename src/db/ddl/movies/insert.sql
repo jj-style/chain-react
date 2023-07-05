@@ -1,1 +1,0 @@
-INSERT INTO movies(id, title) values(?,?)

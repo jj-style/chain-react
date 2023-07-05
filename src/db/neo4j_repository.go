@@ -2,9 +2,11 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -78,7 +80,7 @@ func (n *Neo4jRepository) CreateActor(actor Actor) (*Actor, error) {
 func (n *Neo4jRepository) AllActors() ([]Actor, error) {
 	ctx := context.TODO()
 	session := n.driver.NewSession(ctx, neo4j.SessionConfig{
-		AccessMode: neo4j.AccessModeWrite,
+		AccessMode: neo4j.AccessModeRead,
 	})
 	defer func() {
 		session.Close(ctx)
@@ -97,19 +99,15 @@ func (n *Neo4jRepository) AllActors() ([]Actor, error) {
 		actors := make([]Actor, 0)
 
 		for res.Next(ctx) {
-			itemNode, _, err := neo4j.GetRecordValue[neo4j.Node](res.Record(), "a")
+			node, _, err := neo4j.GetRecordValue[neo4j.Node](res.Record(), "a")
 			if err != nil {
-				return nil, fmt.Errorf("could not find node a")
+				return nil, fmt.Errorf("could not find actor node a")
 			}
-			id, err := neo4j.GetProperty[int64](itemNode, "id")
-			if err != nil {
-				return nil, err
-			}
-			name, err := neo4j.GetProperty[string](itemNode, "name")
+			actor, err := actorFromNode(node)
 			if err != nil {
 				return nil, err
 			}
-			actors = append(actors, Actor{Id: int(id), Name: name})
+			actors = append(actors, *actor)
 		}
 		return actors, nil
 	})
@@ -124,15 +122,110 @@ func (n *Neo4jRepository) DeleteActor(id int64) error {
 }
 
 func (n *Neo4jRepository) LatestActor() (*Actor, error) {
-	return &Actor{}, nil
+	ctx := context.TODO()
+	session := n.driver.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeRead,
+	})
+	defer func() {
+		session.Close(ctx)
+	}()
+
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		res, err := tx.Run(
+			ctx,
+			`match (a:Actor) return a order by a.id desc limit 1`,
+			nil,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if res.Next(ctx) {
+			node, _, err := neo4j.GetRecordValue[neo4j.Node](res.Record(), "a")
+			if err != nil {
+				return nil, err
+			}
+			return actorFromNode(node)
+		} else {
+			return nil, ErrNotExists
+		}
+	})
+	if err != nil {
+		return &Actor{}, err
+	}
+	return result.(*Actor), nil
 }
 
 func (n *Neo4jRepository) RandomActor() (*Actor, error) {
-	return &Actor{}, nil
+	ctx := context.TODO()
+	session := n.driver.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeRead,
+	})
+	defer func() {
+		session.Close(ctx)
+	}()
+
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		res, err := tx.Run(
+			ctx,
+			`match (a:Actor) RETURN a ORDER BY rand() LIMIT 1`,
+			nil,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if res.Next(ctx) {
+			node, _, err := neo4j.GetRecordValue[neo4j.Node](res.Record(), "a")
+			if err != nil {
+				return nil, err
+			}
+			return actorFromNode(node)
+		} else {
+			return nil, errors.New("no actors found")
+		}
+	})
+	if err != nil {
+		return &Actor{}, err
+	}
+	return result.(*Actor), nil
 }
 
-func (n *Neo4jRepository) RandomActorNotId(int) (*Actor, error) {
-	return &Actor{}, nil
+func (n *Neo4jRepository) RandomActorNotId(id int) (*Actor, error) {
+	ctx := context.TODO()
+	session := n.driver.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeRead,
+	})
+	defer func() {
+		session.Close(ctx)
+	}()
+
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		res, err := tx.Run(
+			ctx,
+			`MATCH (a:Actor) WHERE a.id <> $id RETURN a ORDER BY rand() LIMIT 1`,
+			map[string]any{
+				"id": id,
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if res.Next(ctx) {
+			node, _, err := neo4j.GetRecordValue[neo4j.Node](res.Record(), "a")
+			if err != nil {
+				return nil, err
+			}
+			return actorFromNode(node)
+		} else {
+			return nil, errors.New("no actors found")
+		}
+	})
+	if err != nil {
+		return &Actor{}, err
+	}
+	return result.(*Actor), nil
 }
 
 // Movies
@@ -228,4 +321,85 @@ func (n *Neo4jRepository) CreateCredit(credit CreditIn) (*CreditIn, error) {
 
 func (n *Neo4jRepository) AllCredits() ([]Credit, error) {
 	return []Credit{}, nil
+}
+
+func (n *Neo4jRepository) Verify(c Chain) (bool, error) {
+	_, err := n.VerifyWithEdges(c)
+	if err != nil {
+		return false, err
+	}
+	return err == nil, err
+}
+
+func (n *Neo4jRepository) VerifyWithEdges(c Chain) ([]*Edge, error) {
+	ctx := context.TODO()
+	session := n.driver.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeRead,
+	})
+	defer func() {
+		session.Close(ctx)
+	}()
+
+	edges := make([]*Edge, 0, len(c))
+
+	for i := 0; i < len(c)-1; i++ {
+		from := c[i]
+		to := c[i+1]
+
+		n.log.Infof("verifying edge between %d and %d", from, to)
+
+		resp, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+			res, err := tx.Run(ctx, `MATCH (src:Actor {id: $src}) MATCH (dest:Actor {id: $dest}) 
+				MATCH p=(src)-[r:ACTED_IN*1..2]-(dest) return r[0] as src, r[1] as dest limit 1`, map[string]any{
+				"src":  from,
+				"dest": to,
+			})
+			if err != nil {
+				return false, err
+			}
+			if res.Next(ctx) {
+				rec := res.Record()
+
+				srcEdge, _, _ := neo4j.GetRecordValue[neo4j.Relationship](rec, "src")
+				destEdge, _, _ := neo4j.GetRecordValue[neo4j.Relationship](rec, "dest")
+
+				edges = append(edges, &Edge{
+					Src: Credit{
+						Character: srcEdge.GetProperties()["character"].(string),
+						CreditId:  srcEdge.GetProperties()["id"].(string),
+					},
+					Dest: Credit{
+						Character: destEdge.GetProperties()["character"].(string),
+						CreditId:  destEdge.GetProperties()["id"].(string),
+					},
+				})
+				return true, nil
+			}
+			return false, nil
+		})
+
+		if err != nil {
+			return []*Edge{}, err
+		}
+		if !resp.(bool) {
+			return edges, fmt.Errorf("neighbour %d not found adjacent to %d", to, from)
+		}
+	}
+
+	return edges, nil
+}
+
+func actorFromNode(node dbtype.Node) (*Actor, error) {
+	id, err := neo4j.GetProperty[int64](node, "id")
+	if err != nil {
+		return nil, err
+	}
+	name, err := neo4j.GetProperty[string](node, "name")
+	if err != nil {
+		return nil, err
+	}
+	return &Actor{
+		Id:   int(id),
+		Name: name,
+	}, nil
 }

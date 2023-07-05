@@ -1,1 +1,0 @@
-INSERT INTO actors(id, name) values(?,?)

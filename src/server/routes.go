@@ -39,9 +39,8 @@ func setupRouter() *gin.Engine {
 }
 
 func (s *Server) routes() {
-
 	s.Router.GET("/randomActor", s.handleGetRandomActor)
 	s.Router.GET("/randomActorNot/:id", s.handleGetRandomActorNotId)
 	s.Router.POST("/verify", s.handleVerify)
-	s.Router.POST("/chains", s.handleChains)
+	s.Router.POST("/verifyEdges", s.handleVerifyEdges)
 }

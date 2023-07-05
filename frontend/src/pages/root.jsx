@@ -14,6 +14,17 @@ import { Shuffle } from "react-bootstrap-icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
+import * as neo4j from "neo4j-driver";
+import { cypherToGraph } from "graphology-neo4j";
+import circular from "graphology-layout/circular";
+import forceAtlas2 from "graphology-layout-forceatlas2";
+import {
+  ControlsContainer,
+  FullScreenControl,
+  SigmaContainer,
+  ZoomControl,
+} from "@react-sigma/core";
+
 const Root = () => {
   const searchClient = instantMeiliSearch(
     process.env.REACT_APP_MEILISEARCH_HOST,
@@ -23,6 +34,21 @@ const Root = () => {
       primaryKey: "id",
     }
   );
+
+  const driver = neo4j.driver("bolt://localhost", neo4j.auth.basic("", ""));
+  const [G, setG] = useState(null);
+
+  const getGraph = (start, end) => {
+    console.log("getting graph", driver);
+    cypherToGraph(
+      { driver },
+      `match p=(a:Actor{id: ${start}})-[:ACTED_IN*1..4]-(b:Actor{id:${end}}) return p`, // limit 3`,
+      {},
+      { id: "@id", labels: "@labels", type: "@type" }
+    )
+      .then((graph) => setG(graph))
+      .catch((err) => console.error("err getting graph", err));
+  };
 
   const queryClient = useQueryClient();
 
@@ -146,6 +172,7 @@ const Root = () => {
   const { mutate, isPostLoading } = useMutation(postChain, {
     onSuccess: (data) => {
       setVerification(data);
+      getGraph(start.id, end.id);
     },
     onError: (err) => {
       //console.log("error", err.response.data);
@@ -186,7 +213,12 @@ const Root = () => {
     mutateAllChains({ start: start.id, end: end.id });
   };
 
-  console.log(verification);
+  if (G) {
+    // Position nodes on a circle, then run Force Atlas 2 for a while to get proper graph layout:
+    circular.assign(G);
+    const settings = forceAtlas2.inferSettings(G);
+    forceAtlas2.assign(G, { settings, iterations: 600 });
+  }
 
   return (
     <>
@@ -257,7 +289,46 @@ const Root = () => {
           </Button>
         </ButtonGroup>
       </Row>
-      {verification?.valid && (
+
+      {G && verification?.valid && (
+        <SigmaContainer
+          className="w-100"
+          style={{ height: "500px", width: "500px" }}
+          settings={{
+            renderEdgeLabels: true,
+            renderLabels: true,
+            labelRenderedSizeThreshold: 0,
+            nodeReducer: (_, d) => {
+              if (d["@labels"][0] === "Actor") {
+                d.label = d.name;
+                d.color = "red";
+                d.size = 5;
+
+                if (d.id == start.id || d.id == end.id) {
+                  d.highlighted = true;
+                }
+              } else if (d["@labels"][0] === "Movie") {
+                d.label = d.title;
+                d.color = "blue";
+                d.size = 5;
+              }
+              return d;
+            },
+            edgeReducer: (_, e) => {
+              e.label = e.character;
+              return e;
+            },
+          }}
+          graph={G}
+        >
+          <ControlsContainer position={"bottom-right"}>
+            <ZoomControl />
+            <FullScreenControl />
+          </ControlsContainer>
+        </SigmaContainer>
+      )}
+
+      {/* {verification?.valid && (
         <>
           {chains === null && (
             <Row>
@@ -274,7 +345,7 @@ const Root = () => {
             />
           </Row>
         </>
-      )}
+      )} */}
     </>
   );
 };
@@ -325,9 +396,9 @@ const Hit = ({ hit, addHit }) => {
   return (
     <Button
       variant="link"
-      onClick={() => addHit({ name: hit.Name, id: hit.Id })}
+      onClick={() => addHit({ name: hit.name, id: hit.id })}
     >
-      {hit.Name}
+      {hit.name}
     </Button>
   );
 };
@@ -335,7 +406,7 @@ const Hit = ({ hit, addHit }) => {
 // helper to post the chain for verification
 const postChain = async (data) => {
   const { data: response } = await axios.post(
-    "http://localhost:8080/verify",
+    "http://localhost:8080/verifyEdges",
     data
   );
   return response;

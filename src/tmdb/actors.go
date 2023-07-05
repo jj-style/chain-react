@@ -75,7 +75,7 @@ func (t *tmdb) GetAllActors(ctx context.Context, c chan<- *go_tmdb.Person, r fun
 	}
 
 	latestId := latest.ID
-	latestId = 5
+	// latestId = 5
 	return t.getActorsBetween(ctx, c, r, 1, latestId)
 }
 
