@@ -21,7 +21,7 @@ const driver = neo4j.driver(
   )
 );
 
-const Graph = ({ query, start, end }) => {
+const Graph = ({ query, start, end, chain }) => {
   const [graph, setGraph] = useState(null);
 
   useEffect(() => {
@@ -55,10 +55,12 @@ const Graph = ({ query, start, end }) => {
               d.label = d.name;
               d.color = "red";
               d.size = 5;
-              if (start !== undefined && end !== undefined) {
-                if (d?.id?.low === start || d?.id?.low === end) {
-                  d.highlighted = true;
-                }
+              if (
+                d?.id?.low === start ||
+                d?.id?.low === end ||
+                chain.includes(d?.id?.low)
+              ) {
+                d.highlighted = true;
               }
             } else if (d["@labels"][0] === "Movie") {
               d.label = d.title;

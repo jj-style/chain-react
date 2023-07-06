@@ -191,10 +191,12 @@ const Root = () => {
         </ButtonGroup>
       </Row>
       {!isLoadingVerification && verification?.valid && start && end && (
+        // TODO: add slider to configure max relationship hops
         <Graph
-          query={`match p=(a:Actor{id: ${start.id}})-[:ACTED_IN*1..4]-(b:Actor{id:${end.id}}) return p`}
+          query={`match p=(a:Actor{id: ${start.id}})-[:ACTED_IN*1..6]-(b:Actor{id:${end.id}}) return p`}
           start={start.id}
           end={end.id}
+          chain={chain.filter((x) => x !== null).map((x) => x.id)}
         />
       )}
     </>
