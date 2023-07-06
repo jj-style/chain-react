@@ -1,4 +1,3 @@
-import Container from "react-bootstrap/esm/Container";
 import { Bitcoin, Litecoin } from "cryptocons";
 import { LightningFill, CupHot } from "react-bootstrap-icons";
 import withLayout from "./layout";
@@ -66,7 +65,7 @@ const Support = () => {
           address here&gt;
         </li>
         <li>
-          <CupHot size={24} /> <a href="#">bymeacoffee</a>
+          <CupHot size={24} /> <a href="#">buymeacoffee</a>
         </li>
       </ul>
       <br className="mb-5" />
