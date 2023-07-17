@@ -72,8 +72,6 @@ func (n *Neo4jRepository) CreateActor(actor Actor) (*Actor, error) {
 	if err != nil {
 		return nil, err
 	}
-	n.log.Printf("====++> created actor %+v\n", created)
-
 	return created.(*Actor), nil
 }
 
@@ -269,7 +267,6 @@ func (n *Neo4jRepository) CreateMovie(movie Movie) (*Movie, error) {
 	if err != nil {
 		return nil, err
 	}
-	n.log.Printf("====++> created movie %+v\n", created)
 
 	return created.(*Movie), nil
 }

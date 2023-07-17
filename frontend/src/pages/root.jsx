@@ -25,11 +25,11 @@ const Root = () => {
   const [verification, setVerification] = useState(null);
 
   // dev state init
-  useEffect(() => {
-    setStart({ name: "Bruce Willis", id: 62 });
-    setEnd({ name: "Harrison Ford", id: 3 });
-    setChain([{ name: "Gary Oldman", id: 64 }]);
-  }, []);
+  // useEffect(() => {
+  //   setStart({ name: "Bruce Willis", id: 62 });
+  //   setEnd({ name: "Harrison Ford", id: 3 });
+  //   setChain([{ name: "Gary Oldman", id: 64 }]);
+  // }, []);
 
   // add a search hit to the chain
   let addHit = (hit) => {

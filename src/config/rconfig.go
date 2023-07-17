@@ -8,6 +8,7 @@ import (
 	"github.com/meilisearch/meilisearch-go"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 type RConfig struct {
@@ -38,8 +39,17 @@ func NewRuntimeConfig(c *Config) RConfig {
 	})
 	searchRepo := search.NewMeilisearchRepository(m)
 
+	logger := log.StandardLogger()
+	loglvl := log.InfoLevel
+	if p, err := log.ParseLevel(viper.GetString("log.level")); err == nil {
+		loglvl = p
+	} else {
+		log.Fatalf("error parsing log level: %v", err.Error())
+	}
+	logger.SetLevel(loglvl)
+
 	return RConfig{
-		Log:    log.StandardLogger(),
+		Log:    logger,
 		Repo:   repo,
 		Tmdb:   t,
 		Search: &searchRepo,
