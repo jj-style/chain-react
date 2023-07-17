@@ -12,7 +12,9 @@ import { Shuffle } from "react-bootstrap-icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
-import { SEARCH_CLIENT } from "../constants";
+import AsyncSelect from "react-select/async";
+
+import { MEILI_CLIENT, SEARCH_CLIENT } from "../constants";
 
 const Root = () => {
   const queryClient = useQueryClient();
@@ -121,6 +123,8 @@ const Root = () => {
     mutateVerification({ chain: x });
   };
 
+  console.log(start, end);
+
   return (
     <>
       <Row>
@@ -136,6 +140,9 @@ const Root = () => {
           />
 
           {/* ACTOR CHAIN */}
+          {/* TODO - don't show fixed chain with remove at index
+            keep the react-select box with  clearable and have bin icon to remove entirely
+          */}
           {chain.map((link, index) => {
             return (
               <ListGroup.Item
@@ -157,12 +164,17 @@ const Root = () => {
 
           {/* NEW LINK IN CHAIN TEXT FIELD */}
           {newLink !== null && (
-            <InstantSearch indexName="actors" searchClient={SEARCH_CLIENT}>
-              <SearchBox placeholder="find actor..." />
-              <Hits
-                hitComponent={({ hit }) => <Hit hit={hit} addHit={addHit} />}
-              />
-            </InstantSearch>
+            <AsyncSelect
+              loadOptions={loadOptions}
+              cacheOptions={true}
+              defaultOptions={true}
+              isClearable={true}
+              placeholder="find actor..."
+              onChange={(n) => addHit({ id: n.value, name: n.label })}
+              // https://stackoverflow.com/a/63898744
+              menuPortalTarget={document.body}
+              styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+            />
           )}
 
           {/* END ACTOR */}
@@ -212,6 +224,27 @@ const StartEnd = ({
   bgVariant,
   placeholder,
 }) => {
+  return (
+    <InputGroup>
+      <Button variant="secondary" onClick={() => setToSet(() => setState)}>
+        <Shuffle />
+      </Button>
+      <AsyncSelect
+        loadOptions={loadOptions}
+        cacheOptions={true}
+        defaultOptions={true}
+        isClearable={true}
+        placeholder={placeholder}
+        onChange={(n) =>
+          setState(n === null ? n : { id: n.value, name: n.label })
+        }
+        className="flex-fill"
+        menuPortalTarget={document.body}
+        styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+      />
+    </InputGroup>
+  );
+
   return currentState !== null ? (
     <InputGroup className="">
       <Button variant="secondary" onClick={() => setToSet(() => setState)}>
@@ -263,6 +296,21 @@ const postVerifyChain = async (data) => {
     data
   );
   return response;
+};
+
+const loadOptions = (inputValue, callback) => {
+  setTimeout(() => {
+    MEILI_CLIENT.index("actors")
+      .search(inputValue)
+      .then((resp) => {
+        const data = resp.hits.map((h, _) => ({
+          value: h?.id,
+          label: h?.name,
+        }));
+        console.log(data);
+        callback(data);
+      });
+  }, 1000);
 };
 
 export default withLayout(Root, "Home");

@@ -1,4 +1,5 @@
 import { instantMeiliSearch } from "@meilisearch/instant-meilisearch";
+import { MeiliSearch } from 'meilisearch';
 
 export const SEARCH_CLIENT = instantMeiliSearch(
   process.env.REACT_APP_MEILISEARCH_URL,
@@ -9,3 +10,8 @@ export const SEARCH_CLIENT = instantMeiliSearch(
   }
 );
 
+
+export const MEILI_CLIENT = new MeiliSearch({
+  host: process.env.REACT_APP_MEILISEARCH_URL,
+  apiKey: process.env.REACT_APP_MEILISEARCH_API_KEY,
+});
