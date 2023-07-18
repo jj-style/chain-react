@@ -241,7 +241,13 @@ const StartEnd = ({
         }
         className="flex-fill"
         menuPortalTarget={document.body}
-        styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+        styles={{
+          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+          control: (base, props) => ({
+            ...base,
+            backgroundColor: `var(--bs-${bgVariant})`,
+          }),
+        }}
       />
     </InputGroup>
   );

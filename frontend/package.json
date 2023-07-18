@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@meilisearch/instant-meilisearch": "^0.12.0",
     "@react-sigma/core": "^3.4.0",
     "@react-sigma/layout-circular": "^3.4.0",
     "@react-sigma/layout-core": "^3.4.0",
@@ -27,7 +26,6 @@
     "react-bootstrap-icons": "^1.10.3",
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
-    "react-instantsearch-dom": "^6.39.1",
     "react-made-with-love": "^1.0.1",
     "react-router-dom": "^6.10.0",
     "react-scripts": "^5.0.1",
