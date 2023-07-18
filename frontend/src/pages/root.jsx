@@ -1,6 +1,5 @@
 import withLayout from "./layout";
-import { InstantSearch, Hits } from "react-instantsearch-dom";
-import { SearchBox, Graph } from "../components";
+import { Graph } from "../components";
 import { useEffect, useState } from "react";
 import ListGroup from "react-bootstrap/ListGroup";
 import Button from "react-bootstrap/Button";
@@ -14,7 +13,7 @@ import axios from "axios";
 
 import AsyncSelect from "react-select/async";
 
-import { MEILI_CLIENT, SEARCH_CLIENT } from "../constants";
+import { MEILI_CLIENT } from "../constants";
 
 const Root = () => {
   const queryClient = useQueryClient();
@@ -27,11 +26,11 @@ const Root = () => {
   const [verification, setVerification] = useState(null);
 
   // dev state init
-  // useEffect(() => {
-  //   setStart({ name: "Bruce Willis", id: 62 });
-  //   setEnd({ name: "Harrison Ford", id: 3 });
-  //   setChain([{ name: "Gary Oldman", id: 64 }]);
-  // }, []);
+  useEffect(() => {
+    setStart({ name: "Bruce Willis", id: 62 });
+    setEnd({ name: "Harrison Ford", id: 3 });
+    setChain([{ name: "Gary Oldman", id: 64 }]);
+  }, []);
 
   // add a search hit to the chain
   let addHit = (hit) => {
@@ -134,7 +133,6 @@ const Root = () => {
             setToSet={setToSetRandomActor}
             currentState={start}
             setState={setStart}
-            searchClient={SEARCH_CLIENT}
             bgVariant="success"
             placeholder="start with actor"
           />
@@ -182,7 +180,6 @@ const Root = () => {
             setToSet={setToSetRandomActor}
             currentState={end}
             setState={setEnd}
-            searchClient={SEARCH_CLIENT}
             bgVariant={verification?.valid ? "success" : "danger"}
             placeholder="end with actor"
           />
@@ -220,7 +217,6 @@ const StartEnd = ({
   setToSet,
   currentState,
   setState,
-  searchClient,
   bgVariant,
   placeholder,
 }) => {
@@ -232,9 +228,14 @@ const StartEnd = ({
       <AsyncSelect
         loadOptions={loadOptions}
         cacheOptions={true}
-        defaultOptions={true}
+        defaultOptions={false}
         isClearable={true}
         placeholder={placeholder}
+        value={
+          currentState === null
+            ? null
+            : { label: currentState?.name, value: currentState?.id }
+        }
         onChange={(n) =>
           setState(n === null ? n : { id: n.value, name: n.label })
         }
@@ -243,49 +244,6 @@ const StartEnd = ({
         styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
       />
     </InputGroup>
-  );
-
-  return currentState !== null ? (
-    <InputGroup className="">
-      <Button variant="secondary" onClick={() => setToSet(() => setState)}>
-        <Shuffle />
-      </Button>
-      <ListGroup.Item
-        variant={`${bgVariant} d-flex justify-content-between`}
-        style={{ flexGrow: 1 }}
-      >
-        <span>{currentState.name}</span>
-        <CloseButton onClick={() => setState(null)} />
-      </ListGroup.Item>
-    </InputGroup>
-  ) : (
-    <InstantSearch indexName="actors" searchClient={searchClient}>
-      <SearchBox
-        placeholder={placeholder}
-        button={
-          <Button variant="secondary" onClick={() => setToSet(() => setState)}>
-            <Shuffle />
-          </Button>
-        }
-      />
-      <Hits
-        hitComponent={({ hit }) => (
-          <Hit hit={hit} addHit={(hit) => setState(hit)} />
-        )}
-      />
-    </InstantSearch>
-  );
-};
-
-// Render each item returned by search
-const Hit = ({ hit, addHit }) => {
-  return (
-    <Button
-      variant="link"
-      onClick={() => addHit({ name: hit.name, id: hit.id })}
-    >
-      {hit.name}
-    </Button>
   );
 };
 
@@ -298,6 +256,7 @@ const postVerifyChain = async (data) => {
   return response;
 };
 
+// load selectable actor options based on search query
 const loadOptions = (inputValue, callback) => {
   setTimeout(() => {
     MEILI_CLIENT.index("actors")
@@ -307,10 +266,9 @@ const loadOptions = (inputValue, callback) => {
           value: h?.id,
           label: h?.name,
         }));
-        console.log(data);
         callback(data);
       });
-  }, 1000);
+  }, 500);
 };
 
 export default withLayout(Root, "Home");
