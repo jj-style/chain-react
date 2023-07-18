@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,11 +27,20 @@ func setupRouter() *gin.Engine {
 			param.ErrorMessage,
 		)
 	}))
+	// - No origin allowed by default
+	// - GET,POST, PUT, HEAD methods
+	// - Credentials share disabled
+	// - Preflight requests cached for 12 hours
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:3000", "*"}
+	config.ExposeHeaders = []string{"Access-Control-Allow-Origin"}
+	r.Use(cors.New(config))
 	return r
 }
 
 func (s *Server) routes() {
-
 	s.Router.GET("/randomActor", s.handleGetRandomActor)
 	s.Router.GET("/randomActorNot/:id", s.handleGetRandomActorNotId)
+	s.Router.POST("/verify", s.handleVerify)
+	s.Router.POST("/verifyEdges", s.handleVerifyEdges)
 }

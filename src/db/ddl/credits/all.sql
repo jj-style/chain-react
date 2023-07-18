@@ -1,1 +1,0 @@
-SELECT actor_id,name,movie_id,title,credit_id,character FROM credits INNER JOIN actors ON credits.actor_id = actors.id INNER JOIN movies ON credits.movie_id = movies.id

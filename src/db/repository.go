@@ -1,9 +1,6 @@
 package db
 
-import "embed"
-
-//go:embed ddl/migrations
-var migrationFs embed.FS
+import "errors"
 
 type Repository interface {
 	// General
@@ -25,4 +22,13 @@ type Repository interface {
 	// Credits
 	CreateCredit(credit CreditIn) (*CreditIn, error)
 	AllCredits() ([]Credit, error)
+
+	// Graph Functions
+	Verify(c Chain) (bool, error)
+	VerifyWithEdges(c Chain) ([]*Edge, error)
 }
+
+var (
+	ErrNotExists error = errors.New("not exist")
+	ErrDuplicate error = errors.New("unique constraint")
+)

@@ -6,6 +6,8 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/jj-style/chain-react/src/db"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -38,4 +40,69 @@ func (s *Server) handleGetRandomActorNotId(c *gin.Context) {
 	}
 	s.Log.WithField("actor", actor).Debug("got random actor from db")
 	c.JSON(http.StatusOK, actor)
+}
+
+func (s *Server) handleVerifyEdges(c *gin.Context) {
+	type request struct {
+		db.Chain `json:"chain"`
+	}
+	type response struct {
+		Valid bool       `json:"valid"`
+		Error string     `json:"error"`
+		Chain []*db.Edge `json:"chain"`
+	}
+
+	var req request
+	if err := c.BindJSON(&req); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	edges, err := s.Config.Repo.VerifyWithEdges(req.Chain)
+
+	var errs = ""
+	var code = http.StatusOK
+	var valid = true
+	if err != nil {
+		errs = err.Error()
+		code = http.StatusBadRequest
+		valid = false
+	}
+
+	c.JSON(code, response{
+		Valid: valid,
+		Chain: edges,
+		Error: errs,
+	})
+}
+
+func (s *Server) handleVerify(c *gin.Context) {
+	type request struct {
+		db.Chain `json:"chain"`
+	}
+	type response struct {
+		Valid bool   `json:"valid"`
+		Error string `json:"error"`
+	}
+
+	var req request
+	if err := c.BindJSON(&req); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	valid, err := s.Config.Repo.Verify(req.Chain)
+
+	var errs = ""
+	var code = http.StatusOK
+	if err != nil {
+		errs = err.Error()
+		code = http.StatusBadRequest
+		valid = false
+	}
+
+	c.JSON(code, response{
+		Valid: valid,
+		Error: errs,
+	})
 }
