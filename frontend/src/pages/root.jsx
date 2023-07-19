@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import ListGroup from "react-bootstrap/ListGroup";
 import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
-import CloseButton from "react-bootstrap/CloseButton";
 import Row from "react-bootstrap/Row";
 import InputGroup from "react-bootstrap/InputGroup";
-import { Shuffle } from "react-bootstrap-icons";
+import { Shuffle, Trash } from "react-bootstrap-icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
@@ -19,7 +18,6 @@ const Root = () => {
   const queryClient = useQueryClient();
 
   const [chain, setChain] = useState([]);
-  const [newLink, setNewLink] = useState(null);
   const [start, setStart] = useState(null);
   const [end, setEnd] = useState(null);
   const [toSetRandomActor, setToSetRandomActor] = useState(null);
@@ -29,19 +27,8 @@ const Root = () => {
   useEffect(() => {
     setStart({ name: "Bruce Willis", id: 62 });
     setEnd({ name: "Harrison Ford", id: 3 });
-    setChain([{ name: "Gary Oldman", id: 64 }]);
+    // setChain([{ name: "Gary Oldman", id: 64 }]);
   }, []);
-
-  // add a search hit to the chain
-  let addHit = (hit) => {
-    setNewLink(null);
-    setChain((curr) => [...curr, hit]);
-  };
-
-  // remove a link from the chain by id
-  let removeLink = (id) => {
-    setChain((curr) => curr.filter((x) => x.id !== id));
-  };
 
   // random url based on whether start/end are selected
   let randomUrlPath =
@@ -60,7 +47,6 @@ const Root = () => {
       const { data } = await axios.get(
         `${process.env.REACT_APP_SERVER_URL}${randomUrlPath}`
       );
-      console.log("fetched ", data);
       toSetRandomActor && toSetRandomActor(data);
       return data;
     },
@@ -122,8 +108,6 @@ const Root = () => {
     mutateVerification({ chain: x });
   };
 
-  console.log(start, end);
-
   return (
     <>
       <Row>
@@ -138,42 +122,63 @@ const Root = () => {
           />
 
           {/* ACTOR CHAIN */}
-          {/* TODO - don't show fixed chain with remove at index
-            keep the react-select box with  clearable and have bin icon to remove entirely
-          */}
           {chain.map((link, index) => {
             return (
-              <ListGroup.Item
+              <InputGroup
                 key={index}
-                className="d-flex justify-content-between"
-                variant={
-                  verification === null
-                    ? null
-                    : index < verification?.chain?.length
-                    ? "success"
-                    : "danger"
-                }
+                className="d-flex justify-content-between align-items-center"
               >
-                <span>{link.name}</span>
-                <CloseButton onClick={() => removeLink(link.id)} />
-              </ListGroup.Item>
+                <AsyncSelect
+                  loadOptions={loadOptions}
+                  cacheOptions={true}
+                  defaultOptions={true}
+                  isClearable={true}
+                  className="flex-fill"
+                  placeholder="find actor..."
+                  value={
+                    link === null
+                      ? null
+                      : { label: link?.name, value: link?.id }
+                  }
+                  onChange={(n) =>
+                    setChain((curr) => {
+                      var next = [...curr];
+                      next[index] =
+                        n === null ? n : { id: n.value, name: n.label };
+                      return next;
+                    })
+                  }
+                  // https://stackoverflow.com/a/63898744
+                  menuPortalTarget={document.body}
+                  styles={{
+                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                    control: (base, props) => ({
+                      ...base,
+                      backgroundColor: `var(--bs-${
+                        verification === null
+                          ? null
+                          : index < verification?.chain?.length
+                          ? "success"
+                          : "danger"
+                      })`,
+                    }),
+                  }}
+                />
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setChain((curr) => {
+                      var next = [...curr];
+                      next.splice(index, 1);
+                      return next;
+                    });
+                  }}
+                >
+                  <Trash />
+                </Button>
+              </InputGroup>
             );
           })}
-
-          {/* NEW LINK IN CHAIN TEXT FIELD */}
-          {newLink !== null && (
-            <AsyncSelect
-              loadOptions={loadOptions}
-              cacheOptions={true}
-              defaultOptions={true}
-              isClearable={true}
-              placeholder="find actor..."
-              onChange={(n) => addHit({ id: n.value, name: n.label })}
-              // https://stackoverflow.com/a/63898744
-              menuPortalTarget={document.body}
-              styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
-            />
-          )}
 
           {/* END ACTOR */}
           <StartEnd
@@ -187,7 +192,10 @@ const Root = () => {
       </Row>
       <Row>
         <ButtonGroup className="m-0 p-0">
-          <Button variant="outline-primary" onClick={() => setNewLink("")}>
+          <Button
+            variant="outline-primary"
+            onClick={() => setChain((c) => [...c, null])}
+          >
             +
           </Button>
           <Button
@@ -222,9 +230,6 @@ const StartEnd = ({
 }) => {
   return (
     <InputGroup>
-      <Button variant="secondary" onClick={() => setToSet(() => setState)}>
-        <Shuffle />
-      </Button>
       <AsyncSelect
         loadOptions={loadOptions}
         cacheOptions={true}
@@ -249,6 +254,9 @@ const StartEnd = ({
           }),
         }}
       />
+      <Button variant="secondary" onClick={() => setToSet(() => setState)}>
+        <Shuffle />
+      </Button>
     </InputGroup>
   );
 };
