@@ -68,7 +68,7 @@ func runGetActors(ctx context.Context, c *config.RConfig) {
 				continue
 			}
 			c.Log.Infof("==> saving person(%d - %s)\n", p.ID, p.Name)
-			actor := db.Actor{Id: p.ID, Name: p.Name}
+			actor := db.ActorFromTmdbPerson(p)
 			_, err := c.Repo.CreateActor(actor)
 			if err != nil {
 				fmt.Printf("error storing %v: %v\n", actor, err)

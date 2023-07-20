@@ -12,7 +12,18 @@ services:
       - 0.0.0.0:7700:7700
     volumes:
       - ./tmp/meili:/meili_data
-    #user: "1000:1000"
+    user: "1000:1000"
+  meilisearch-init:
+    image: alpine:latest
+    container_name: meilisearch-init
+    command: sh -c "apk add --no-cache curl && sh /data/index_settings.sh"
+    environment:
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
+    volumes:
+      - ./data/index_settings.sh:/data/index_settings.sh
+    depends_on:
+      - meilisearch
+            
   neo4j:
     image: neo4j
     container_name: neo4j

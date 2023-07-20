@@ -274,7 +274,7 @@ const postVerifyChain = async (data) => {
 const loadOptions = (inputValue, callback) => {
   setTimeout(() => {
     MEILI_CLIENT.index("actors")
-      .search(inputValue)
+      .search(inputValue, { sort: ["popularity:desc"] })
       .then((resp) => {
         const data = resp.hits.map((h, _) => ({
           value: h?.id,
