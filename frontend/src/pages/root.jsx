@@ -114,7 +114,7 @@ const Root = () => {
 
   return (
     <>
-      <Row>
+      <Row className="my-2 mx-1">
         <ListGroup className="d-flex justify-content-between">
           {/* START ACTOR */}
           <StartEnd
@@ -130,7 +130,7 @@ const Root = () => {
             return (
               <InputGroup
                 key={index}
-                className="d-flex justify-content-between align-items-center"
+                className="d-flex justify-content-between align-items-center my-1"
               >
                 <AsyncSelect
                   loadOptions={loadOptions}
@@ -160,12 +160,19 @@ const Root = () => {
                       ...base,
                       backgroundColor: `var(--bs-${
                         verification === null
-                          ? null
+                          ? "gray"
                           : index < verification?.chain?.length
                           ? "success"
                           : "danger"
                       })`,
-                      filter: "brightness(1.25)",
+                    }),
+                    singleValue: (provided) => ({
+                      ...provided,
+                      color: "white",
+                    }),
+                    placeholder: (provided) => ({
+                      ...provided,
+                      color: "white",
                     }),
                   }}
                 />
@@ -196,7 +203,7 @@ const Root = () => {
         </ListGroup>
       </Row>
       <Row>
-        <ButtonGroup className="m-0 p-0">
+        <ButtonGroup>
           <Button
             variant="outline-primary"
             onClick={() => setChain((c) => [...c, null])}
@@ -204,7 +211,7 @@ const Root = () => {
             +
           </Button>
           <Button
-            variant="outline-info"
+            variant="outline-success"
             disabled={!validChain}
             onClick={() => doPostVerifyChain()}
           >
@@ -270,7 +277,14 @@ const StartEnd = ({
           control: (base, props) => ({
             ...base,
             backgroundColor: `var(--bs-${bgVariant})`,
-            filter: "brightness(1.25)",
+          }),
+          singleValue: (provided) => ({
+            ...provided,
+            color: "white",
+          }),
+          placeholder: (provided) => ({
+            ...provided,
+            color: "white",
           }),
         }}
       />

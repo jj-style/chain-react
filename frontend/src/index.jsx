@@ -7,6 +7,8 @@ import Router from "./router";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import "./styles/index.css";
+
 const queryClient = new QueryClient();
 
 const root = ReactDOM.createRoot(document.getElementById("root"));

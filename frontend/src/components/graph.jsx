@@ -45,7 +45,11 @@ const Graph = ({ query, start, end, chain }) => {
     return (
       <SigmaContainer
         className="w-100"
-        style={{ height: "500px", width: "500px" }}
+        style={{
+          height: "500px",
+          width: "500px",
+          backgroundColor: "aliceblue",
+        }}
         settings={{
           renderEdgeLabels: true,
           renderLabels: true,
