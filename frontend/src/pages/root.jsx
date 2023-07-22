@@ -251,6 +251,7 @@ const StartEnd = ({
           control: (base, props) => ({
             ...base,
             backgroundColor: `var(--bs-${bgVariant})`,
+            filter: "brightness(1.25)",
           }),
         }}
       />
