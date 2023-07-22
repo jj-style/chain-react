@@ -35,7 +35,7 @@ const Graph = ({ query, start, end, chain }) => {
         setGraph(g);
       })
       .catch((err) => console.error("err getting graph", err));
-  }, []);
+  }, [query]);
 
   if (graph) {
     // Position nodes on a circle, then run Force Atlas 2 for a while to get proper graph layout:

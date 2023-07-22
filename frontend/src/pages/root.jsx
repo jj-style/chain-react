@@ -7,12 +7,15 @@ import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Row from "react-bootstrap/Row";
 import InputGroup from "react-bootstrap/InputGroup";
 import { Shuffle, Trash } from "react-bootstrap-icons";
+import Slider from "rc-slider";
+import "rc-slider/assets/index.css";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
 import AsyncSelect from "react-select/async";
 
 import { MEILI_CLIENT } from "../constants";
+import { graph } from "neo4j-driver";
 
 const Root = () => {
   const queryClient = useQueryClient();
@@ -22,12 +25,13 @@ const Root = () => {
   const [end, setEnd] = useState(null);
   const [toSetRandomActor, setToSetRandomActor] = useState(null);
   const [verification, setVerification] = useState(null);
+  const [graphLength, setGraphLength] = useState(6);
 
   // dev state init
   useEffect(() => {
     setStart({ name: "Bruce Willis", id: 62 });
     setEnd({ name: "Harrison Ford", id: 3 });
-    // setChain([{ name: "Gary Oldman", id: 64 }]);
+    setChain([{ name: "Gary Oldman", id: 64 }]);
   }, []);
 
   // random url based on whether start/end are selected
@@ -161,6 +165,7 @@ const Root = () => {
                           ? "success"
                           : "danger"
                       })`,
+                      filter: "brightness(1.25)",
                     }),
                   }}
                 />
@@ -208,13 +213,27 @@ const Root = () => {
         </ButtonGroup>
       </Row>
       {!isLoadingVerification && verification?.valid && start && end && (
-        // TODO: add slider to configure max relationship hops
-        <Graph
-          query={`match p=(a:Actor{id: ${start.id}})-[:ACTED_IN*1..6]-(b:Actor{id:${end.id}}) return p`}
-          start={start.id}
-          end={end.id}
-          chain={chain.filter((x) => x !== null).map((x) => x.id)}
-        />
+        <div>
+          <Slider
+            className="mt-2 mb-4"
+            value={graphLength}
+            onChange={(n) => setGraphLength(n)}
+            dots={true}
+            min={4}
+            max={10}
+            step={2}
+            marks={[4, 6, 8, 10].reduce(
+              (prev, curr) => ({ ...prev, [curr]: curr }),
+              {}
+            )}
+          />
+          <Graph
+            query={`match p=(a:Actor{id: ${start.id}})-[:ACTED_IN*1..${graphLength}]-(b:Actor{id:${end.id}}) return p`}
+            start={start.id}
+            end={end.id}
+            chain={chain.filter((x) => x !== null).map((x) => x.id)}
+          />
+        </div>
       )}
     </>
   );
