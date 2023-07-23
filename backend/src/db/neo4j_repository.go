@@ -347,7 +347,8 @@ func (n *Neo4jRepository) VerifyWithEdges(c Chain) ([]*Edge, error) {
 
 		resp, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 			res, err := tx.Run(ctx, `MATCH (src:Actor {id: $src}) MATCH (dest:Actor {id: $dest}) 
-				MATCH p=(src)-[r:ACTED_IN*1..2]-(dest) return r[0] as src, r[1] as dest limit 1`, map[string]any{
+				MATCH p=(src)-[r1:ACTED_IN]-(movie:Movie)-[r2:ACTED_IN]-(dest)
+				return src, r1 as srcEdge, movie, dest, r2 as destEdge limit 1`, map[string]any{
 				"src":  from,
 				"dest": to,
 			})
@@ -357,18 +358,40 @@ func (n *Neo4jRepository) VerifyWithEdges(c Chain) ([]*Edge, error) {
 			if res.Next(ctx) {
 				rec := res.Record()
 
-				srcEdge, _, _ := neo4j.GetRecordValue[neo4j.Relationship](rec, "src")
-				destEdge, _, _ := neo4j.GetRecordValue[neo4j.Relationship](rec, "dest")
+				srcEdge, _, _ := neo4j.GetRecordValue[neo4j.Relationship](rec, "srcEdge")
+				destEdge, _, _ := neo4j.GetRecordValue[neo4j.Relationship](rec, "destEdge")
+				movieNode, _, _ := neo4j.GetRecordValue[neo4j.Node](res.Record(), "movie")
+				srcANode, _, _ := neo4j.GetRecordValue[neo4j.Node](res.Record(), "src")
+				destANode, _, _ := neo4j.GetRecordValue[neo4j.Node](res.Record(), "src")
+
+				srcActor, err := actorFromNode(srcANode)
+				if err != nil {
+					return false, err
+				}
+				destActor, err := actorFromNode(destANode)
+				if err != nil {
+					return false, err
+				}
+				movie, err := movieFromNode(movieNode)
+				if err != nil {
+					return false, err
+				}
+				srcCredit, err := creditFromRelation(srcEdge)
+				if err != nil {
+					return false, err
+				}
+				destCredit, err := creditFromRelation(destEdge)
+				if err != nil {
+					return false, err
+				}
+				srcCredit.Movie = *movie
+				srcCredit.Actor = *srcActor
+				destCredit.Movie = *movie
+				destCredit.Actor = *destActor
 
 				edges = append(edges, &Edge{
-					Src: Credit{
-						Character: srcEdge.GetProperties()["character"].(string),
-						CreditId:  srcEdge.GetProperties()["id"].(string),
-					},
-					Dest: Credit{
-						Character: destEdge.GetProperties()["character"].(string),
-						CreditId:  destEdge.GetProperties()["id"].(string),
-					},
+					Src:  *srcCredit,
+					Dest: *destCredit,
 				})
 				return true, nil
 			}
@@ -398,5 +421,27 @@ func actorFromNode(node dbtype.Node) (*Actor, error) {
 	return &Actor{
 		Id:   int(id),
 		Name: name,
+	}, nil
+}
+
+func movieFromNode(node dbtype.Node) (*Movie, error) {
+	id, err := neo4j.GetProperty[int64](node, "id")
+	if err != nil {
+		return nil, err
+	}
+	title, err := neo4j.GetProperty[string](node, "title")
+	if err != nil {
+		return nil, err
+	}
+	return &Movie{
+		Id:    int(id),
+		Title: title,
+	}, nil
+}
+
+func creditFromRelation(rel dbtype.Relationship) (*Credit, error) {
+	return &Credit{
+		Character: rel.GetProperties()["character"].(string),
+		CreditId:  rel.GetProperties()["id"].(string),
 	}, nil
 }
