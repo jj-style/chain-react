@@ -362,7 +362,7 @@ func (n *Neo4jRepository) VerifyWithEdges(c Chain) ([]*Edge, error) {
 				destEdge, _, _ := neo4j.GetRecordValue[neo4j.Relationship](rec, "destEdge")
 				movieNode, _, _ := neo4j.GetRecordValue[neo4j.Node](res.Record(), "movie")
 				srcANode, _, _ := neo4j.GetRecordValue[neo4j.Node](res.Record(), "src")
-				destANode, _, _ := neo4j.GetRecordValue[neo4j.Node](res.Record(), "src")
+				destANode, _, _ := neo4j.GetRecordValue[neo4j.Node](res.Record(), "dest")
 
 				srcActor, err := actorFromNode(srcANode)
 				if err != nil {
