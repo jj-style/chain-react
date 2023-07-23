@@ -22,5 +22,5 @@ go.work
 
 # Local Config
 .env
+.envrc
 .chain-react.yaml
-*.sqlite
