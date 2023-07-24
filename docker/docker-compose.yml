@@ -1,7 +1,5 @@
 version: '3'
 services:
-  # TODO server (when mysql repo implemented)
-  # TODO mariadb
   meilisearch:
     image: getmeili/meilisearch:v1.1
     container_name: meilisearch
@@ -40,3 +38,21 @@ services:
       - NEO4J_dbms_security_procedures_allowlist=gds.*
       - NEO4J_dbms_security_procedures_unrestricted=gds.*
     user: "1000:1000"
+
+  backend:
+    image: chain-react-server
+    container_name: backend
+    build:
+      context: ../backend
+    ports:
+      - 8080:8080
+    volumes:
+      - ./data/backend/.chain-react.yaml:/app/.chain-react.yaml:ro
+
+  frontend:
+    image: chain-react-frontend
+    container_name: frontend
+    build:
+      context: ../frontend
+    ports:
+      - 3000:80
