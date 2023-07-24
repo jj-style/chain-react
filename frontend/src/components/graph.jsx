@@ -7,6 +7,8 @@ import {
 } from "@react-sigma/core";
 import "@react-sigma/core/lib/react-sigma.min.css";
 
+import Spinner from 'react-bootstrap/Spinner';
+
 import circular from "graphology-layout/circular";
 import forceAtlas2 from "graphology-layout-forceatlas2";
 
@@ -23,8 +25,10 @@ const driver = neo4j.driver(
 
 const Graph = ({ query, start, end, chain }) => {
   const [graph, setGraph] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+    useEffect(() => {
+    setLoading(true);
     cypherToGraph(
       { driver },
       query,
@@ -32,10 +36,19 @@ const Graph = ({ query, start, end, chain }) => {
       { id: "@id", labels: "@labels", type: "@type" }
     )
       .then((g) => {
-        setGraph(g);
+          setGraph(g);
+          setLoading(false);
       })
       .catch((err) => console.error("err getting graph", err));
   }, [query]);
+
+  if(loading) {
+      return <div className="w-100 h-100 d-flex flex-column align-items-center justify-content-center my-5">
+              <Spinner animation="border" role="status" variant="success" className="justify-content-center">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+  }
 
   if (graph) {
     // Position nodes on a circle, then run Force Atlas 2 for a while to get proper graph layout:

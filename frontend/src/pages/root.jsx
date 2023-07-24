@@ -15,7 +15,6 @@ import axios from "axios";
 import AsyncSelect from "react-select/async";
 
 import { MEILI_CLIENT } from "../constants";
-import { graph } from "neo4j-driver";
 
 const Root = () => {
   const queryClient = useQueryClient();
@@ -25,14 +24,14 @@ const Root = () => {
   const [end, setEnd] = useState(null);
   const [toSetRandomActor, setToSetRandomActor] = useState(null);
   const [verification, setVerification] = useState(null);
-  const [graphLength, setGraphLength] = useState(6);
+  const [graphLength, setGraphLength] = useState(4);
 
   // dev state init
-  useEffect(() => {
-    setStart({ name: "Bruce Willis", id: 62 });
-    setEnd({ name: "Harrison Ford", id: 3 });
-    setChain([{ name: "Gary Oldman", id: 64 }]);
-  }, []);
+  //useEffect(() => {
+    //setStart({ name: "Bruce Willis", id: 62 });
+    //setEnd({ name: "Harrison Ford", id: 3 });
+    //setChain([{ name: "Gary Oldman", id: 64 }]);
+  //}, []);
 
   // random url based on whether start/end are selected
   let randomUrlPath =
@@ -71,6 +70,7 @@ const Root = () => {
   // when any change made to chain, remove verification data
   useEffect(() => {
     setVerification(null);
+    setGraphLength(4);
   }, [start, end, chain]);
 
   // get whether chain is valid to send to server for verification
