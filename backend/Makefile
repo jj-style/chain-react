@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 
 build: ## Build a binary
-	mkdir -p build && CGO_ENABLED=1 go build -o build/main
+	mkdir -p build && go build -o build/main
 
 .PHONY: test
 test: ## Run automated tests

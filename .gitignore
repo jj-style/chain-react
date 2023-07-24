@@ -21,9 +21,10 @@ go.work
 
 
 # Local Config
-.env
+.env*
 .envrc
 .chain-react.yaml
+.prod.yaml
 *.sqlite
 
 tmp/
