@@ -40,5 +40,7 @@ func init() {
 
 	serverCmd.Flags().Int("port", 8080, "Port to run chain-react server on")
 	viper.BindPFlag("port", serverCmd.Flags().Lookup("port"))
+	serverCmd.Flags().Bool("dev", false, "enable dev mode")
+	viper.BindPFlag("devMode", serverCmd.Flags().Lookup("dev"))
 
 }

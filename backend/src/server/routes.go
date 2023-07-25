@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 func setupRouter() *gin.Engine {
@@ -32,8 +33,12 @@ func setupRouter() *gin.Engine {
 	// - Credentials share disabled
 	// - Preflight requests cached for 12 hours
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:3000", "*"}
 	config.ExposeHeaders = []string{"Access-Control-Allow-Origin"}
+	if viper.GetBool("devMode") {
+		config.AllowOrigins = []string{"*"}
+	} else {
+		config.AllowOrigins = []string{"http://localhost:3000"}
+	}
 	r.Use(cors.New(config))
 	return r
 }
