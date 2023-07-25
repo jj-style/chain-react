@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"bufio"
 	"context"
 	"errors"
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 
 	"github.com/jj-style/chain-react/src/config"
 	"github.com/jj-style/chain-react/src/db"
@@ -17,6 +19,7 @@ import (
 
 var (
 	update_missing bool
+	actor_file     string
 )
 
 // actorsCmd represents the actors command
@@ -42,6 +45,7 @@ func init() {
 	// is called directly, e.g.:
 	// actorsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	actorsCmd.Flags().BoolVarP(&update_missing, "update", "u", false, "Only get missing actors")
+	actorsCmd.Flags().StringVarP(&actor_file, "file", "f", "", "File to load actors from")
 }
 
 func runGetActors(ctx context.Context, c *config.RConfig) {
@@ -85,20 +89,47 @@ func runGetActors(ctx context.Context, c *config.RConfig) {
 	}
 	var err error
 	if update_missing {
-		a, err2 := c.Repo.LatestActor()
-		if err2 != nil {
-			if errors.Is(err2, db.ErrNotExists) {
-				err = c.Tmdb.GetAllActors(ctx, people, reducer)
-			} else {
-				log.Fatalln("getting latest actor: ", err2)
-			}
-		} else {
-			err = c.Tmdb.GetActorsFrom(ctx, people, reducer, a.Id)
-		}
+		err = updateMissingActors(ctx, c, people, reducer)
+	} else if actor_file != "" {
+		err = getActorsFromFile(ctx, c, people, reducer, actor_file)
 	} else {
 		err = c.Tmdb.GetAllActors(ctx, people, reducer)
 	}
 	if err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func updateMissingActors(ctx context.Context, c *config.RConfig, people chan *go_tmdb.Person, reducer func() error) error {
+	var err error = nil
+	if latest, errLatest := c.Repo.LatestActor(); errLatest != nil {
+		if errors.Is(errLatest, db.ErrNotExists) {
+			err = c.Tmdb.GetAllActors(ctx, people, reducer)
+		} else {
+			log.Fatalln("getting latest actor: ", errLatest)
+		}
+	} else {
+		err = c.Tmdb.GetActorsFrom(ctx, people, reducer, latest.Id)
+	}
+	return err
+}
+
+func getActorsFromFile(ctx context.Context, c *config.RConfig, people chan *go_tmdb.Person, reducer func() error, file string) error {
+	f, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+	actorNames := make([]string, 0)
+
+	scan := bufio.NewScanner(f)
+	scan.Split(bufio.ScanLines)
+	for scan.Scan() {
+		name := strings.TrimSpace(scan.Text())
+		actorNames = append(actorNames, name)
+	}
+	err = c.Tmdb.GetActorsByName(ctx, people, reducer, actorNames...)
+	if err != nil {
+		return err
+	}
+	return f.Close()
 }

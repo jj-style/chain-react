@@ -15,6 +15,7 @@ type TMDb interface {
 	// Calls the reducer function `r` for each actor successfully retrieved.
 	GetActorsFrom(ctx context.Context, c chan<- *go_tmdb.Person, r func() error, id int) error
 	// TODO - add GetActorByID
+	GetActorsByName(ctx context.Context, c chan<- *go_tmdb.Person, r func() error, names ...string) error
 	// Gets the movie credits for the actor given by the id.
 	GetActorMovieCredits(ctx context.Context, id int) (*go_tmdb.PersonMovieCredits, error)
 	GetAllActorMovieCredits(ctx context.Context, c chan<- *go_tmdb.PersonMovieCredits, r func() error, ids ...int) error

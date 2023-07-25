@@ -3,6 +3,7 @@ package tmdb
 import (
 	"context"
 	"fmt"
+	"runtime"
 	"sync/atomic"
 
 	go_tmdb "github.com/jj-style/go-tmdb"
@@ -90,8 +91,71 @@ func (t *tmdb) GetActorsFrom(ctx context.Context, c chan<- *go_tmdb.Person, r fu
 
 	// sanity check
 	if id >= latestId {
-		return fmt.Errorf("Current latest id(%d) is greater than the latest from TMDB(%d)", id, latestId)
+		return fmt.Errorf("current latest id(%d) is greater than the latest from TMDB(%d)", id, latestId)
 	}
 
 	return t.getActorsBetween(ctx, c, r, id+1, latestId)
+}
+
+func (t *tmdb) GetActorsByName(ctx context.Context, c chan<- *go_tmdb.Person, r func() error, names ...string) error {
+	g, ctx := errgroup.WithContext(ctx)
+
+	actorNames := getActorNames(ctx, g, names...)
+
+	// Map
+	workers := int32(runtime.NumCPU())
+	for i := 0; i < int(workers); i++ {
+		g.Go(func() error {
+			defer func() {
+				// Last one out closes shop
+				if atomic.AddInt32(&workers, -1) == 0 {
+					close(c)
+				}
+			}()
+
+			for name := range actorNames {
+				if p, err := t.client.SearchPerson(name, map[string]string{"language": "en-GB"}); err != nil {
+					t.log.Errorf("finding person(%s): %v", name, err)
+				} else {
+					if p.TotalResults == 0 {
+						t.log.Errorf("no people found with name '%s'", name)
+						continue
+					}
+					top := &go_tmdb.Person{
+						ID:         p.Results[0].ID,
+						Name:       p.Results[0].Name,
+						Popularity: p.Results[0].Popularity,
+					}
+					select {
+					case <-ctx.Done():
+						return ctx.Err()
+					case c <- top:
+					}
+				}
+			}
+			return nil
+		})
+	}
+
+	g.Go(r)
+
+	return g.Wait()
+}
+
+func getActorNames(ctx context.Context, g *errgroup.Group, names ...string) <-chan string {
+	c := make(chan string)
+	// Produce
+	g.Go(func() error {
+		defer close(c)
+		for _, name := range names {
+			name := name
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case c <- name:
+			}
+		}
+		return nil
+	})
+	return c
 }
