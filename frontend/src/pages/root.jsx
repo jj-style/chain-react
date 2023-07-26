@@ -230,6 +230,7 @@ const Root = () => {
       <Row>
         <ButtonGroup>
           <Button
+            disabled={isLoadingGraphData}
             variant="outline-primary"
             onClick={() => setChain((c) => [...c, null])}
           >
@@ -237,7 +238,7 @@ const Root = () => {
           </Button>
           <Button
             variant="outline-success"
-            disabled={!validChain}
+            disabled={!validChain || isLoadingGraphData}
             onClick={() => doPostVerifyChain()}
           >
             verify
