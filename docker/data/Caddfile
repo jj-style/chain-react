@@ -1,0 +1,19 @@
+{
+	debug
+	log
+}
+
+search.chainreact.jjstyle.co.uk {
+	reverse_proxy meilisearch:7700
+}
+
+chainreact.jjstyle.co.uk {
+	encode gzip
+    handle /api/* {
+        reverse_proxy backend:8080
+    }
+
+	root * /var/www/chainreact
+	try_files {path} /index.html
+	file_server
+}

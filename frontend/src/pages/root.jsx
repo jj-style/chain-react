@@ -39,8 +39,8 @@ const Root = () => {
   // random url based on whether start/end are selected
   let randomUrlPath =
     start === null && end === null
-      ? "/randomActor"
-      : `/randomActorNot/${start !== null ? start.id : end.id}`;
+      ? "/api/randomActor"
+      : `/api/randomActorNot/${start !== null ? start.id : end.id}`;
 
   // get random actor hook
   const {
@@ -81,7 +81,7 @@ const Root = () => {
     if (verification?.valid && start && end) {
       setIsLoadingGraphData(true);
       axios
-        .get(`${process.env.REACT_APP_SERVER_URL}/graph`, {
+        .get(`${process.env.REACT_APP_SERVER_URL}/api/graph`, {
           params: { start: start?.id, end: end?.id, length: graphLength },
         })
         .then((data) => {
@@ -341,7 +341,7 @@ const StartEnd = ({
 // helper to post the chain for verification
 const postVerifyChain = async (data) => {
   const { data: response } = await axios.post(
-    `${process.env.REACT_APP_SERVER_URL}/verifyEdges`,
+    `${process.env.REACT_APP_SERVER_URL}/api/verifyEdges`,
     data
   );
   return response;

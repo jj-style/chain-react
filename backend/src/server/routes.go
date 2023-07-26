@@ -46,9 +46,11 @@ func setupRouter() *gin.Engine {
 }
 
 func (s *Server) routes() {
-	s.Router.GET("/randomActor", s.handleGetRandomActor)
-	s.Router.GET("/randomActorNot/:id", s.handleGetRandomActorNotId)
-	s.Router.POST("/verify", s.handleVerify)
-	s.Router.POST("/verifyEdges", s.handleVerifyEdges)
-	s.Router.GET("/graph", s.handleGetGraph)
+	api := s.Router.Group("/api")
+
+	api.GET("/randomActor", s.handleGetRandomActor)
+	api.GET("/randomActorNot/:id", s.handleGetRandomActorNotId)
+	api.POST("/verify", s.handleVerify)
+	api.POST("/verifyEdges", s.handleVerifyEdges)
+	api.GET("/graph", s.handleGetGraph)
 }
