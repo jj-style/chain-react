@@ -54,5 +54,5 @@ services:
       - 443:443
     volumes:
       - ./data/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./data/caddy:/data
+      - ./tmp/caddy:/data
       - ./../frontend/build:/var/www/chainreact:ro
