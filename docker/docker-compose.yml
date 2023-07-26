@@ -46,14 +46,6 @@ services:
     volumes:
       - ./data/backend/.chain-react.yaml:/app/.chain-react.yaml:ro
 
-  frontend:
-    image: chain-react-frontend
-    container_name: frontend
-    build:
-      context: ../frontend
-    ports:
-      - 3000:80
-
   proxy:
     image: caddy:2.6.4-alpine
     container_name: proxy
