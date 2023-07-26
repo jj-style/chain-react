@@ -106,3 +106,33 @@ func (s *Server) handleVerify(c *gin.Context) {
 		Error: errs,
 	})
 }
+
+func (s *Server) handleGetGraph(c *gin.Context) {
+	type request struct {
+		Start  int `form:"start" json:"start" binding:"required"`
+		End    int `form:"end" json:"end" binding:"required"`
+		Length int `form:"length" json:"length"`
+	}
+	var req request
+	if err := c.BindQuery(&req); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var length = 4
+	if req.Length != 0 {
+		// TODO - fix query otherwise this blows things up
+		if req.Length != 4 {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("length '%d' not valid option", req.Length)})
+			return
+		}
+		length = req.Length
+	}
+
+	g, err := s.Config.Repo.GetGraph(req.Start, req.End, length)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"result": g})
+}

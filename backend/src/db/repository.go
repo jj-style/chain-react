@@ -1,6 +1,10 @@
 package db
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
+)
 
 type Repository interface {
 	// General
@@ -26,6 +30,7 @@ type Repository interface {
 	// Graph Functions
 	Verify(c Chain) (bool, error)
 	VerifyWithEdges(c Chain) ([]*Edge, error)
+	GetGraph(start, end, length int) ([]dbtype.Path, error)
 }
 
 var (

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -12,6 +13,7 @@ import (
 func setupRouter() *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
+	r.Use(gzip.Gzip(gzip.DefaultCompression))
 	// LoggerWithFormatter middleware will write the logs to gin.DefaultWriter
 	// By default gin.DefaultWriter = os.Stdout
 	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
@@ -48,4 +50,5 @@ func (s *Server) routes() {
 	s.Router.GET("/randomActorNot/:id", s.handleGetRandomActorNotId)
 	s.Router.POST("/verify", s.handleVerify)
 	s.Router.POST("/verifyEdges", s.handleVerifyEdges)
+	s.Router.GET("/graph", s.handleGetGraph)
 }

@@ -6,6 +6,7 @@ import Button from "react-bootstrap/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Row from "react-bootstrap/Row";
 import InputGroup from "react-bootstrap/InputGroup";
+import Spinner from "react-bootstrap/Spinner";
 import { Shuffle, Trash } from "react-bootstrap-icons";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
@@ -25,13 +26,15 @@ const Root = () => {
   const [toSetRandomActor, setToSetRandomActor] = useState(null);
   const [verification, setVerification] = useState(null);
   const [graphLength, setGraphLength] = useState(4);
+  const [graphData, setGraphData] = useState(null);
+  const [isLoadingGraphData, setIsLoadingGraphData] = useState(false);
 
   // dev state init
-  //useEffect(() => {
-    //setStart({ name: "Bruce Willis", id: 62 });
-    //setEnd({ name: "Harrison Ford", id: 3 });
-    //setChain([{ name: "Gary Oldman", id: 64 }]);
-  //}, []);
+  useEffect(() => {
+    setStart({ name: "Bruce Willis", id: 62 });
+    setEnd({ name: "Harrison Ford", id: 3 });
+    setChain([{ name: "Gary Oldman", id: 64 }]);
+  }, []);
 
   // random url based on whether start/end are selected
   let randomUrlPath =
@@ -72,6 +75,28 @@ const Root = () => {
     setVerification(null);
     setGraphLength(4);
   }, [start, end, chain]);
+
+  // when verification valid, fetch graph
+  useEffect(() => {
+    if (verification?.valid && start && end) {
+      setIsLoadingGraphData(true);
+      axios
+        .get(`${process.env.REACT_APP_SERVER_URL}/graph`, {
+          params: { start: start?.id, end: end?.id, length: graphLength },
+        })
+        .then((data) => {
+          setGraphData(data?.data?.result);
+          setIsLoadingGraphData(false);
+        })
+        .catch((err) => {
+          setIsLoadingGraphData(false);
+          setGraphData(null);
+          // TODO - show errors nicer
+          console.log(err.response);
+          alert(`${err?.response?.status}: ${err?.response?.data?.error}`);
+        });
+    }
+  }, [verification, start, end, graphLength, setIsLoadingGraphData]);
 
   // get whether chain is valid to send to server for verification
   let validateChain = () => {
@@ -219,29 +244,47 @@ const Root = () => {
           </Button>
         </ButtonGroup>
       </Row>
-      {!isLoadingVerification && verification?.valid && start && end && (
-        <div>
-          <Slider
-            className="mt-2 mb-4"
-            value={graphLength}
-            onChange={(n) => setGraphLength(n)}
-            dots={true}
-            min={4}
-            max={10}
-            step={2}
-            marks={[4, 6, 8, 10].reduce(
-              (prev, curr) => ({ ...prev, [curr]: curr }),
-              {}
-            )}
-          />
-          <Graph
-            query={`match p=(a:Actor{id: ${start.id}})-[:ACTED_IN*1..${graphLength}]-(b:Actor{id:${end.id}}) return p`}
-            start={start.id}
-            end={end.id}
-            chain={chain.filter((x) => x !== null).map((x) => x.id)}
-          />
+
+      {isLoadingGraphData && verification?.valid && (
+        <div className="w-100 h-100 d-flex flex-column align-items-center justify-content-center my-5">
+          <Spinner
+            animation="border"
+            role="status"
+            variant="success"
+            className="justify-content-center"
+          >
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
         </div>
       )}
+      {!isLoadingVerification &&
+        !isLoadingGraphData &&
+        verification?.valid &&
+        start &&
+        end &&
+        graphData !== null && (
+          <div>
+            {/* <Slider
+              className="mt-2 mb-4"
+              value={graphLength}
+              onChange={(n) => setGraphLength(n)}
+              dots={true}
+              min={4}
+              max={10}
+              step={2}
+              marks={[4, 6, 8, 10].reduce(
+                (prev, curr) => ({ ...prev, [curr]: curr }),
+                {}
+              )}
+            /> */}
+            <Graph
+              start={start.id}
+              end={end.id}
+              chain={chain.filter((x) => x !== null).map((x) => x.id)}
+              data={graphData}
+            />
+          </div>
+        )}
     </>
   );
 };

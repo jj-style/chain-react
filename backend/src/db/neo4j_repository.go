@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
@@ -407,6 +408,50 @@ func (n *Neo4jRepository) VerifyWithEdges(c Chain) ([]*Edge, error) {
 	}
 
 	return edges, nil
+}
+
+func (n *Neo4jRepository) GetGraph(start, end, length int) ([]dbtype.Path, error) {
+	ctx := context.TODO()
+	session := n.driver.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeRead,
+	})
+	defer func() {
+		session.Close(ctx)
+	}()
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := fmt.Sprintf(`MATCH p=(a:Actor{id: $start})-[:ACTED_IN*1..%d]-(b:Actor{id: $end}) RETURN p`, 4)
+		runTimer := time.Now()
+		res, err := tx.Run(
+			ctx, query,
+			map[string]any{
+				"start":  start,
+				"end":    end,
+				"length": length,
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
+		n.log.Debugf("ran get graph query in %s", time.Since(runTimer))
+		parseRecordsTimer := time.Now()
+		records := make([]dbtype.Path, 0, 100)
+		for res.Next(ctx) {
+			path, ok := res.Record().Get("p")
+			if !ok {
+				return nil, errors.New("could not get path from record")
+			}
+			records = append(records, path.(dbtype.Path))
+		}
+		if len(records) == 0 {
+			return records, errors.New("no path found")
+		}
+		n.log.Debugf("parsed graph records in %s", time.Since(parseRecordsTimer))
+		return records, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.([]dbtype.Path), nil
 }
 
 func actorFromNode(node dbtype.Node) (*Actor, error) {
