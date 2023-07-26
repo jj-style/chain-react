@@ -30,11 +30,11 @@ const Root = () => {
   const [isLoadingGraphData, setIsLoadingGraphData] = useState(false);
 
   // dev state init
-  useEffect(() => {
-    setStart({ name: "Bruce Willis", id: 62 });
-    setEnd({ name: "Harrison Ford", id: 3 });
-    setChain([{ name: "Gary Oldman", id: 64 }]);
-  }, []);
+  // useEffect(() => {
+  //   setStart({ name: "Bruce Willis", id: 62 });
+  //   setEnd({ name: "Harrison Ford", id: 3 });
+  //   setChain([{ name: "Gary Oldman", id: 64 }]);
+  // }, []);
 
   // random url based on whether start/end are selected
   let randomUrlPath =
