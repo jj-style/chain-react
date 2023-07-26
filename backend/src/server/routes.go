@@ -39,7 +39,7 @@ func setupRouter() *gin.Engine {
 	if viper.GetBool("devMode") {
 		config.AllowOrigins = []string{"*"}
 	} else {
-		config.AllowOrigins = []string{"http://localhost:3000"}
+		config.AllowOrigins = []string{viper.GetString("server.cors")}
 	}
 	r.Use(cors.New(config))
 	return r
