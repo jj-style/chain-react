@@ -12,6 +12,8 @@ services:
     volumes:
       - ./tmp/meili:/meili_data
     user: "1000:1000"
+    restart: unless-stopped
+
   meilisearch-init:
     image: alpine:latest
     container_name: meilisearch-init
@@ -45,6 +47,7 @@ services:
       - 8080:8080
     volumes:
       - ./data/backend/.chain-react.yaml:/app/.chain-react.yaml:ro
+    restart: unless-stopped
 
   proxy:
     image: caddy:2.6.4-alpine
@@ -56,3 +59,4 @@ services:
       - ./data/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./tmp/caddy:/data
       - ./../frontend/build:/var/www/chainreact:ro
+    restart: unless-stopped
