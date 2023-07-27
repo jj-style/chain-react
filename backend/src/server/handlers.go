@@ -109,12 +109,11 @@ func (s *Server) handleVerify(c *gin.Context) {
 
 func (s *Server) handleGetGraph(c *gin.Context) {
 	type request struct {
-		Start  int `form:"start" json:"start" binding:"required"`
-		End    int `form:"end" json:"end" binding:"required"`
-		Length int `form:"length" json:"length"`
+		Chain  []int `json:"chain" binding:"required"`
+		Length int   `json:"length"`
 	}
 	var req request
-	if err := c.BindQuery(&req); err != nil {
+	if err := c.BindJSON(&req); err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -129,7 +128,7 @@ func (s *Server) handleGetGraph(c *gin.Context) {
 		length = req.Length
 	}
 
-	g, err := s.Config.Repo.GetGraph(req.Start, req.End, length)
+	g, err := s.Config.Repo.GetGraph(length, req.Chain...)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

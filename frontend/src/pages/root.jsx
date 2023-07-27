@@ -81,8 +81,13 @@ const Root = () => {
     if (verification?.valid && start && end) {
       setIsLoadingGraphData(true);
       axios
-        .get(`${process.env.REACT_APP_SERVER_URL}/api/graph`, {
-          params: { start: start?.id, end: end?.id, length: graphLength },
+        .post(`${process.env.REACT_APP_SERVER_URL}/api/graph`, {
+          chain: [
+            start?.id,
+            ...chain.filter((x) => x !== null).map((x) => x.id),
+            end?.id,
+          ],
+          length: graphLength,
         })
         .then((data) => {
           setGraphData(data?.data?.result);

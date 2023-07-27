@@ -30,7 +30,7 @@ type Repository interface {
 	// Graph Functions
 	Verify(c Chain) (bool, error)
 	VerifyWithEdges(c Chain) ([]*Edge, error)
-	GetGraph(start, end, length int) ([]dbtype.Path, error)
+	GetGraph(length int, nodes ...int) ([]dbtype.Path, error)
 }
 
 var (

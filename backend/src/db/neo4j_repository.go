@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -410,7 +411,7 @@ func (n *Neo4jRepository) VerifyWithEdges(c Chain) ([]*Edge, error) {
 	return edges, nil
 }
 
-func (n *Neo4jRepository) GetGraph(start, end, length int) ([]dbtype.Path, error) {
+func (n *Neo4jRepository) GetGraph(length int, nodes ...int) ([]dbtype.Path, error) {
 	ctx := context.TODO()
 	session := n.driver.NewSession(ctx, neo4j.SessionConfig{
 		AccessMode: neo4j.AccessModeRead,
@@ -418,17 +419,27 @@ func (n *Neo4jRepository) GetGraph(start, end, length int) ([]dbtype.Path, error
 	defer func() {
 		session.Close(ctx)
 	}()
+
+	nodeIds := make([]string, 0, len(nodes))
+	for _, n := range nodes {
+		nodeIds = append(nodeIds, fmt.Sprint(n))
+	}
+
 	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
-		query := fmt.Sprintf(`MATCH p=(a:Actor{id: $start})-[:ACTED_IN*1..%d]-(b:Actor{id: $end}) RETURN p`, 4)
-		runTimer := time.Now()
-		res, err := tx.Run(
-			ctx, query,
-			map[string]any{
-				"start":  start,
-				"end":    end,
-				"length": length,
-			},
+		// https://neo4j.com/developer/kb/all-shortest-paths-between-set-of-nodes/
+		query := fmt.Sprintf(`MATCH (n:Actor) where n.id IN [%s]
+							  WITH collect(n) as nodes
+							  UNWIND nodes as n
+							  UNWIND nodes as m
+							  WITH * WHERE n.id < m.id
+							  MATCH p = allShortestPaths( (n)-[*..%d]-(m) )
+							  RETURN p`,
+			strings.Join(nodeIds, ", "),
+			4,
 		)
+		fmt.Println(query)
+		runTimer := time.Now()
+		res, err := tx.Run(ctx, query, nil)
 		if err != nil {
 			return nil, err
 		}

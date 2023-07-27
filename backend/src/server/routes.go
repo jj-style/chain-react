@@ -52,5 +52,5 @@ func (s *Server) routes() {
 	api.GET("/randomActorNot/:id", s.handleGetRandomActorNotId)
 	api.POST("/verify", s.handleVerify)
 	api.POST("/verifyEdges", s.handleVerifyEdges)
-	api.GET("/graph", s.handleGetGraph)
+	api.POST("/graph", s.handleGetGraph)
 }
