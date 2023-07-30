@@ -12,7 +12,7 @@ import forceAtlas2 from "graphology-layout-forceatlas2";
 
 import { loadGraph } from "./cypherToGraph";
 
-const Graph = ({ start, end, chain, data }) => {
+const Graph = ({ start, end, chain, data, verification }) => {
   const [graph, setGraph] = useState(null);
 
   useEffect(() => {
@@ -20,6 +20,10 @@ const Graph = ({ start, end, chain, data }) => {
       .then((g) => setGraph(g))
       .catch((err) => console.log("error constructing graph ", err));
   }, [data]);
+
+  const pathEdges = verification?.chain
+    .map((c) => [c?.src?.CreditId, c?.dest?.CreditId])
+    .flat();
 
   if (graph) {
     // Position nodes on a circle, then run Force Atlas 2 for a while to get proper graph layout:
@@ -55,6 +59,10 @@ const Graph = ({ start, end, chain, data }) => {
           },
           edgeReducer: (_, e) => {
             e.label = e.character;
+            if (pathEdges.includes(e.id)) {
+              e.color = "green";
+              e.size = 1;
+            }
             return e;
           },
         }}

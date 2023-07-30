@@ -288,6 +288,7 @@ const Root = () => {
               end={end.id}
               chain={chain.filter((x) => x !== null).map((x) => x.id)}
               data={graphData}
+              verification={verification}
             />
           </div>
         )}
