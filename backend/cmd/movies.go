@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
 
 	"github.com/jj-style/chain-react/src/config"
@@ -57,28 +58,41 @@ func runGetMovies(ctx context.Context, c *config.RConfig) {
 			// insert movie first (if not exist)
 			for _, mc := range cr.Cast {
 				m := db.Movie{Id: mc.ID, Title: mc.Title}
-				_, err = c.Repo.CreateMovie(m)
-				if err != nil {
-					if errors.Is(err, db.ErrDuplicate) {
-						c.Log.Debugf("skip creating existing movie(%v)", m)
-					} else {
-						c.Log.Errorf("creating movie(%v): %v", m, err)
-						continue
+				// create movies once
+				if exist, err := c.Redis.Get(ctx, fmt.Sprintf("movie:%d", m.Id)).Bool(); err != nil || !exist {
+					_, err = c.Repo.CreateMovie(m)
+					if err != nil {
+						if errors.Is(err, db.ErrDuplicate) {
+							c.Log.Debugf("skip creating existing movie(%v)", m)
+						} else {
+							c.Log.Errorf("creating movie(%v): %v", m, err)
+							continue
+						}
 					}
+					c.Redis.Set(ctx, fmt.Sprintf("movie:%d", m.Id), true, 0)
 				}
+
 				// movie exists so insert credit entry for this actor
 				credit := db.CreditIn{ActorId: cr.ID, MovieId: mc.ID, CreditId: mc.CreditID, Character: mc.Character}
+
+				// check if movie already entered for actor, if so skip
+				if exist, err := c.Redis.SIsMember(ctx, fmt.Sprintf("actor:%d:movies", credit.ActorId), credit.MovieId).Result(); err == nil && exist {
+					continue
+				}
+				// check for custom reason to skip credit
+				// TODO - filter inserting credits based on "character" ("self"/"himself"/"voices", ...)
+				// TODO - only insert actors if poss - not directors
 				if shouldSkipCredit(credit) {
 					continue
 				}
-				// TODO - filter inserting credits based on "character" ("self"/"himself"/"voices", ...)
-				// TODO - only insert actors if poss - not directors
 				if _, err = c.Repo.CreateCredit(credit); err != nil {
 					if errors.Is(err, db.ErrDuplicate) {
 						c.Log.Debugf("skip creating existing credit(%v)", credit)
 					} else {
 						c.Log.Errorf("creating credit(%v): %v", credit, err)
 					}
+				} else {
+					c.Redis.SAdd(ctx, fmt.Sprintf("actor:%d:movies", credit.ActorId), credit.MovieId)
 				}
 			}
 		}

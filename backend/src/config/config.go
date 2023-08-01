@@ -4,6 +4,7 @@ type Config struct {
 	Tmdb        tmdbConfig        `mapstructure:"tmdb"`
 	Db          dbConfig          `mapstructure:"db"`
 	Meilisearch meilisearchConfig `mapstructure:"meilisearch"`
+	Redis       redisConfig
 }
 
 type tmdbConfig struct {
@@ -20,4 +21,10 @@ type dbConfig struct {
 type meilisearchConfig struct {
 	Host   string `mapstructure:"host"`
 	ApiKey string `mapstructure:"api_key"`
+}
+
+type redisConfig struct {
+	Address  string `mapstructure:"address"`
+	Password string `mapstructure:"password"`
+	Db       int    `mapstructure:"db"`
 }

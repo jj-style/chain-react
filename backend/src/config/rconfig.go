@@ -7,6 +7,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/meilisearch/meilisearch-go"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/redis/go-redis/v9"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -16,6 +17,7 @@ type RConfig struct {
 	Repo   db.Repository
 	Tmdb   tmdb.TMDb
 	Search search.Repository
+	Redis  *redis.Client
 }
 
 func NewRuntimeConfig(c *Config) RConfig {
@@ -39,6 +41,12 @@ func NewRuntimeConfig(c *Config) RConfig {
 	})
 	searchRepo := search.NewMeilisearchRepository(m)
 
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     c.Redis.Address,
+		Password: c.Redis.Password,
+		DB:       c.Redis.Db,
+	})
+
 	logger := log.StandardLogger()
 	loglvl := log.InfoLevel
 	if p, err := log.ParseLevel(viper.GetString("log.level")); err == nil {
@@ -53,5 +61,6 @@ func NewRuntimeConfig(c *Config) RConfig {
 		Repo:   repo,
 		Tmdb:   t,
 		Search: &searchRepo,
+		Redis:  redisClient,
 	}
 }

@@ -13,7 +13,6 @@ import (
 	"github.com/jj-style/chain-react/src/db"
 	go_tmdb "github.com/jj-style/go-tmdb"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -68,6 +67,11 @@ func runGetActors(ctx context.Context, c *config.RConfig) {
 		// Reduce
 		newPeople := make([]db.Actor, 0)
 		for p := range people {
+			// ignore duplicates
+			if exist, err := c.Redis.Get(ctx, fmt.Sprintf("actor:%d", p.ID)).Bool(); err == nil && exist {
+				c.Log.Warnf("skipping duplicate person(%d - %s)", p.ID, p.Name)
+				continue
+			}
 			if p.Popularity < 10 {
 				c.Log.Warnf("skipping person(%d - %s) as popularity(%f) < 10", p.ID, p.Name, p.Popularity)
 				continue
@@ -84,6 +88,14 @@ func runGetActors(ctx context.Context, c *config.RConfig) {
 		// Index every fetched actor to the search DB
 		if err := c.Search.AddDocuments(newPeople, "actors"); err != nil {
 			fmt.Printf("error indexing new people: %v\n", err)
+		}
+
+		// Keep track of all actors in redis
+		for _, p := range newPeople {
+			// Don't use ctx as it's been cancelled at this point
+			if err := c.Redis.Set(context.TODO(), fmt.Sprintf("actor:%d", p.Id), true, 0).Err(); err != nil {
+				c.Log.Warnf("error saving actor:%d to redis: %v", p.Id, err)
+			}
 		}
 
 		return nil
@@ -128,18 +140,6 @@ func getActorsFromFile(ctx context.Context, c *config.RConfig, people chan *go_t
 		name := strings.TrimSpace(scan.Text())
 		actorNames = append(actorNames, name)
 	}
-
-	actorNames = lo.Filter(actorNames, func(name string, _ int) bool {
-		a, err := c.Repo.SearchActorName(name)
-		if err != nil {
-			return true
-		}
-		if a == nil {
-			c.Log.Debugf("actor '%s' not found in the DB", name)
-			return true
-		}
-		return false
-	})
 
 	err = c.Tmdb.GetActorsByName(ctx, people, reducer, actorNames...)
 	if err != nil {

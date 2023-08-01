@@ -4,11 +4,13 @@ go 1.20
 
 require (
 	github.com/gin-contrib/cors v1.4.0
+	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-gonic/gin v1.9.0
 	github.com/jj-style/go-tmdb v0.0.0-20230416100312-335e4e927692
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/meilisearch/meilisearch-go v0.24.0
 	github.com/neo4j/neo4j-go-driver/v5 v5.9.0
+	github.com/redis/go-redis/v9 v9.0.5
 	github.com/samber/lo v1.38.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.7.0
@@ -19,9 +21,10 @@ require (
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/bytedance/sonic v1.8.7 // indirect
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/gin-contrib/gzip v0.0.6 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect

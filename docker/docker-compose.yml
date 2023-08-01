@@ -10,7 +10,7 @@ services:
     ports:
       - 0.0.0.0:7700:7700
     volumes:
-      - ./tmp/meili:/meili_data
+      - .${CR_DOCKER_DATA}/meili:/meili_data
     user: "1000:1000"
     restart: unless-stopped
 
@@ -33,10 +33,19 @@ services:
       - 7687:7687
     restart: unless-stopped
     volumes:
-      - ./tmp/neo:/data
+      - ${CR_DOCKER_DATA}/neo:/data
     env_file:
       - .env
     user: "1000:1000"
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - 6379:6379
+    command: redis-server --appendonly yes
+    volumes:
+      - ${CR_DOCKER_DATA}/redis:/data
 
   backend:
     image: chain-react-server
@@ -48,6 +57,10 @@ services:
     volumes:
       - ./data/backend/.chain-react.yaml:/app/.chain-react.yaml:ro
     restart: unless-stopped
+    depends_on:
+      - redis
+      - neo4j
+      - meilisearch
 
   proxy:
     image: caddy:2.6.4-alpine
@@ -57,6 +70,6 @@ services:
       - 443:443
     volumes:
       - ./data/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./tmp/caddy:/data
+      - ${CR_DOCKER_DATA}/caddy:/data
       - ./../frontend/build:/var/www/chainreact:ro
     restart: unless-stopped
