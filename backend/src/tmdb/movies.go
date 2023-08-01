@@ -2,6 +2,7 @@ package tmdb
 
 import (
 	"context"
+	"runtime"
 	"sync/atomic"
 
 	go_tmdb "github.com/jj-style/go-tmdb"
@@ -31,7 +32,7 @@ func (t *tmdb) GetAllActorMovieCredits(ctx context.Context, c chan<- *go_tmdb.Pe
 	})
 
 	// Map
-	workers := int32(10)
+	workers := int32(runtime.NumCPU())
 	for i := 0; i < int(workers); i++ {
 		g.Go(func() error {
 			defer func() {
@@ -55,8 +56,9 @@ func (t *tmdb) GetAllActorMovieCredits(ctx context.Context, c chan<- *go_tmdb.Pe
 			return nil
 		})
 	}
-
-	g.Go(r)
+	for i := 0; i < runtime.NumCPU(); i++ {
+		g.Go(r)
+	}
 
 	return g.Wait()
 }
