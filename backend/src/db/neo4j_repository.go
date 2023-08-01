@@ -121,6 +121,47 @@ func (n *Neo4jRepository) DeleteActor(id int64) error {
 	return nil
 }
 
+func (n *Neo4jRepository) SearchActorName(name string) (*Actor, error) {
+	ctx := context.TODO()
+	session := n.driver.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeRead,
+	})
+	defer func() {
+		session.Close(ctx)
+	}()
+
+	result, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		res, err := tx.Run(
+			ctx,
+			`MATCH (a:Actor {name: $name}) RETURN a`,
+			map[string]any{
+				"name": name,
+			},
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if res.Next(ctx) {
+			node, _, err := neo4j.GetRecordValue[neo4j.Node](res.Record(), "a")
+			if err != nil {
+				return nil, fmt.Errorf("could not find actor node a")
+			}
+			actor, err := actorFromNode(node)
+			if err != nil {
+				return nil, fmt.Errorf("could not create actor from node: %v", err)
+			}
+			return actor, nil
+		}
+
+		return nil, fmt.Errorf("no actors found with name '%s'", name)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return result.(*Actor), nil
+}
+
 func (n *Neo4jRepository) LatestActor() (*Actor, error) {
 	ctx := context.TODO()
 	session := n.driver.NewSession(ctx, neo4j.SessionConfig{

@@ -17,6 +17,7 @@ type Repository interface {
 	LatestActor() (*Actor, error)
 	RandomActor() (*Actor, error)
 	RandomActorNotId(int) (*Actor, error)
+	SearchActorName(name string) (*Actor, error)
 
 	// Movies
 	CreateMovie(movie Movie) (*Movie, error)

@@ -13,6 +13,7 @@ import (
 	"github.com/jj-style/chain-react/src/db"
 	go_tmdb "github.com/jj-style/go-tmdb"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -127,6 +128,19 @@ func getActorsFromFile(ctx context.Context, c *config.RConfig, people chan *go_t
 		name := strings.TrimSpace(scan.Text())
 		actorNames = append(actorNames, name)
 	}
+
+	actorNames = lo.Filter(actorNames, func(name string, _ int) bool {
+		a, err := c.Repo.SearchActorName(name)
+		if err != nil {
+			return true
+		}
+		if a == nil {
+			c.Log.Debugf("actor '%s' not found in the DB", name)
+			return true
+		}
+		return false
+	})
+
 	err = c.Tmdb.GetActorsByName(ctx, people, reducer, actorNames...)
 	if err != nil {
 		return err
