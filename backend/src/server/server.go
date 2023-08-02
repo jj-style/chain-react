@@ -21,10 +21,10 @@ func NewServer(config *config.RConfig) *Server {
 	}
 
 	s := &Server{
-		Router: setupRouter(),
+		Router: newRouter(),
 		Config: config,
 		Log:    logger,
 	}
-	s.routes()
+	s.setupRoutes()
 	return s
 }

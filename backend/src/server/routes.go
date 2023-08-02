@@ -10,16 +10,14 @@ import (
 	"github.com/spf13/viper"
 )
 
-func setupRouter() *gin.Engine {
+func newRouter() *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
-	// LoggerWithFormatter middleware will write the logs to gin.DefaultWriter
-	// By default gin.DefaultWriter = os.Stdout
+	// configure logging middleware
 	r.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-		// your custom format
-		return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
-			param.ClientIP,
+		return fmt.Sprintf("[%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+			// param.ClientIP, <============ DON'T LOG USERS IP ADDRESS
 			param.TimeStamp.Format(time.RFC1123),
 			param.Method,
 			param.Path,
@@ -30,10 +28,8 @@ func setupRouter() *gin.Engine {
 			param.ErrorMessage,
 		)
 	}))
-	// - No origin allowed by default
-	// - GET,POST, PUT, HEAD methods
-	// - Credentials share disabled
-	// - Preflight requests cached for 12 hours
+
+	// Configure CORS
 	config := cors.DefaultConfig()
 	config.ExposeHeaders = []string{"Access-Control-Allow-Origin"}
 	if viper.GetBool("devMode") {
@@ -45,7 +41,7 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
-func (s *Server) routes() {
+func (s *Server) setupRoutes() {
 	api := s.Router.Group("/api")
 
 	api.GET("/randomActor", s.handleGetRandomActor)
