@@ -8,6 +8,7 @@
 		}
 		format filter {
 			wrap console
+			# DON'T LOG USERS IP ADDRESS
 			fields {
 				request>remote_ip delete
 				request>remote_port delete
