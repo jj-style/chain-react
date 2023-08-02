@@ -20,7 +20,7 @@ import { MEILI_CLIENT } from "../constants";
 const Root = () => {
   const queryClient = useQueryClient();
 
-  const [chain, setChain] = useState([]);
+  const [chain, setChain] = useState([null]);
   const [start, setStart] = useState(null);
   const [end, setEnd] = useState(null);
   const [toSetRandomActor, setToSetRandomActor] = useState(null);
