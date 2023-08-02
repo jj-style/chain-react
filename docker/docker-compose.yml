@@ -49,7 +49,7 @@ services:
       - ${CR_DOCKER_DATA}/redis:/data
 
   backend:
-    image: ghcr.io/jj-style/chain-react:latest
+    image: ghcr.io/jj-style/chain-react:master
     container_name: backend
     build:
       context: ../backend
