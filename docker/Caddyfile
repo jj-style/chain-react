@@ -1,6 +1,21 @@
 {
 	debug
-	log
+	log {
+		output file /var/log/access.log {
+			roll_size 100MiB
+			roll_keep 5
+			roll_keep_for 7d
+		}
+		format filter {
+			wrap console
+			fields {
+				request>remote_ip delete
+				request>remote_port delete
+				request>headers>User-Agent delete
+			}
+		}
+		level debug
+	}
 }
 
 search.chainreact.jjstyle.co.uk {
