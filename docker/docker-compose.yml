@@ -10,7 +10,7 @@ services:
     ports:
       - 0.0.0.0:7700:7700
     volumes:
-      - .${CR_DOCKER_DATA}/meili:/meili_data
+      - ${CR_DOCKER_DATA}/meili:/meili_data
     user: "1000:1000"
     restart: unless-stopped
 
