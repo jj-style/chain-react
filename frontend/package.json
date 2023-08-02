@@ -19,7 +19,7 @@
     "graphology": "^0.25.1",
     "graphology-types": "^0.24.7",
     "lodash": "^4.17.21",
-    "meilisearch": "^0.33.0",
+    "meilisearch": "^0.34.0",
     "rc-slider": "^10.2.1",
     "react": "^18.2.0",
     "react-bootstrap": "^2.7.4",
