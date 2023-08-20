@@ -1,0 +1,17 @@
+default:
+    just --list
+
+build:
+    mkdir -p build && go build -o build/main
+
+generate:
+    go generate ./...
+
+test: 
+    go test ./...
+
+fmt:
+    go fmt
+
+tidy:
+    go mod tidy

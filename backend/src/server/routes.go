@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func newRouter() *gin.Engine {
+func newRouter(devMode bool) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
@@ -32,7 +32,7 @@ func newRouter() *gin.Engine {
 	// Configure CORS
 	config := cors.DefaultConfig()
 	config.ExposeHeaders = []string{"Access-Control-Allow-Origin"}
-	if viper.GetBool("devMode") {
+	if devMode {
 		config.AllowOrigins = []string{"*"}
 	} else {
 		config.AllowOrigins = []string{viper.GetString("server.cors")}

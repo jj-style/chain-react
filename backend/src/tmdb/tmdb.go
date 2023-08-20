@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//go:generate mockery
 type TMDb interface {
 	// Get all actors up to the latest actor in TMDB database.
 	// Calls the reducer function `r` for each actor successfully retrieved.
