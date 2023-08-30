@@ -7,7 +7,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//go:generate mockery
 type TMDb interface {
 	// Get all actors up to the latest actor in TMDB database.
 	// Calls the reducer function `r` for each actor successfully retrieved.
@@ -22,16 +21,20 @@ type TMDb interface {
 	GetAllActorMovieCredits(ctx context.Context, c chan<- *go_tmdb.PersonMovieCredits, r func() error, ids ...int) error
 }
 
+type TMDbClient interface {
+	GetPersonLatest() (*go_tmdb.PersonLatest, error)
+	SearchPerson(name string, options map[string]string) (*go_tmdb.PersonSearchResults, error)
+	GetPersonInfo(id int, options map[string]string) (*go_tmdb.Person, error)
+	GetPersonMovieCredits(id int, options map[string]string) (*go_tmdb.PersonMovieCredits, error)
+}
+
 type tmdb struct {
-	client *go_tmdb.TMDb
+	client TMDbClient
 	log    *log.Logger
 }
 
-func NewClient(api_key string) TMDb {
-	config := go_tmdb.Config{
-		APIKey: api_key,
-	}
-	client := go_tmdb.Init(config)
+func NewClient(client TMDbClient, logger *log.Logger) TMDb {
+
 	return &tmdb{
 		client: client,
 		log:    log.StandardLogger(),

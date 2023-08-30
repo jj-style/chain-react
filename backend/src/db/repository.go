@@ -6,7 +6,6 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
 )
 
-//go:generate mockery
 type Repository interface {
 	// General
 	Migrate() error

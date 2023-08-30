@@ -3,7 +3,9 @@
 package db
 
 import (
+	db "github.com/jj-style/chain-react/src/db"
 	dbtype "github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
+
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -21,19 +23,19 @@ func (_m *MockRepository) EXPECT() *MockRepository_Expecter {
 }
 
 // AllActors provides a mock function with given fields:
-func (_m *MockRepository) AllActors() ([]Actor, error) {
+func (_m *MockRepository) AllActors() ([]db.Actor, error) {
 	ret := _m.Called()
 
-	var r0 []Actor
+	var r0 []db.Actor
 	var r1 error
-	if rf, ok := ret.Get(0).(func() ([]Actor, error)); ok {
+	if rf, ok := ret.Get(0).(func() ([]db.Actor, error)); ok {
 		return rf()
 	}
-	if rf, ok := ret.Get(0).(func() []Actor); ok {
+	if rf, ok := ret.Get(0).(func() []db.Actor); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]Actor)
+			r0 = ret.Get(0).([]db.Actor)
 		}
 	}
 
@@ -63,30 +65,30 @@ func (_c *MockRepository_AllActors_Call) Run(run func()) *MockRepository_AllActo
 	return _c
 }
 
-func (_c *MockRepository_AllActors_Call) Return(_a0 []Actor, _a1 error) *MockRepository_AllActors_Call {
+func (_c *MockRepository_AllActors_Call) Return(_a0 []db.Actor, _a1 error) *MockRepository_AllActors_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockRepository_AllActors_Call) RunAndReturn(run func() ([]Actor, error)) *MockRepository_AllActors_Call {
+func (_c *MockRepository_AllActors_Call) RunAndReturn(run func() ([]db.Actor, error)) *MockRepository_AllActors_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // AllCredits provides a mock function with given fields:
-func (_m *MockRepository) AllCredits() ([]Credit, error) {
+func (_m *MockRepository) AllCredits() ([]db.Credit, error) {
 	ret := _m.Called()
 
-	var r0 []Credit
+	var r0 []db.Credit
 	var r1 error
-	if rf, ok := ret.Get(0).(func() ([]Credit, error)); ok {
+	if rf, ok := ret.Get(0).(func() ([]db.Credit, error)); ok {
 		return rf()
 	}
-	if rf, ok := ret.Get(0).(func() []Credit); ok {
+	if rf, ok := ret.Get(0).(func() []db.Credit); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]Credit)
+			r0 = ret.Get(0).([]db.Credit)
 		}
 	}
 
@@ -116,30 +118,30 @@ func (_c *MockRepository_AllCredits_Call) Run(run func()) *MockRepository_AllCre
 	return _c
 }
 
-func (_c *MockRepository_AllCredits_Call) Return(_a0 []Credit, _a1 error) *MockRepository_AllCredits_Call {
+func (_c *MockRepository_AllCredits_Call) Return(_a0 []db.Credit, _a1 error) *MockRepository_AllCredits_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockRepository_AllCredits_Call) RunAndReturn(run func() ([]Credit, error)) *MockRepository_AllCredits_Call {
+func (_c *MockRepository_AllCredits_Call) RunAndReturn(run func() ([]db.Credit, error)) *MockRepository_AllCredits_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // AllMovies provides a mock function with given fields:
-func (_m *MockRepository) AllMovies() ([]Movie, error) {
+func (_m *MockRepository) AllMovies() ([]db.Movie, error) {
 	ret := _m.Called()
 
-	var r0 []Movie
+	var r0 []db.Movie
 	var r1 error
-	if rf, ok := ret.Get(0).(func() ([]Movie, error)); ok {
+	if rf, ok := ret.Get(0).(func() ([]db.Movie, error)); ok {
 		return rf()
 	}
-	if rf, ok := ret.Get(0).(func() []Movie); ok {
+	if rf, ok := ret.Get(0).(func() []db.Movie); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]Movie)
+			r0 = ret.Get(0).([]db.Movie)
 		}
 	}
 
@@ -169,34 +171,34 @@ func (_c *MockRepository_AllMovies_Call) Run(run func()) *MockRepository_AllMovi
 	return _c
 }
 
-func (_c *MockRepository_AllMovies_Call) Return(_a0 []Movie, _a1 error) *MockRepository_AllMovies_Call {
+func (_c *MockRepository_AllMovies_Call) Return(_a0 []db.Movie, _a1 error) *MockRepository_AllMovies_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockRepository_AllMovies_Call) RunAndReturn(run func() ([]Movie, error)) *MockRepository_AllMovies_Call {
+func (_c *MockRepository_AllMovies_Call) RunAndReturn(run func() ([]db.Movie, error)) *MockRepository_AllMovies_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // CreateActor provides a mock function with given fields: actor
-func (_m *MockRepository) CreateActor(actor Actor) (*Actor, error) {
+func (_m *MockRepository) CreateActor(actor db.Actor) (*db.Actor, error) {
 	ret := _m.Called(actor)
 
-	var r0 *Actor
+	var r0 *db.Actor
 	var r1 error
-	if rf, ok := ret.Get(0).(func(Actor) (*Actor, error)); ok {
+	if rf, ok := ret.Get(0).(func(db.Actor) (*db.Actor, error)); ok {
 		return rf(actor)
 	}
-	if rf, ok := ret.Get(0).(func(Actor) *Actor); ok {
+	if rf, ok := ret.Get(0).(func(db.Actor) *db.Actor); ok {
 		r0 = rf(actor)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*Actor)
+			r0 = ret.Get(0).(*db.Actor)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(Actor) error); ok {
+	if rf, ok := ret.Get(1).(func(db.Actor) error); ok {
 		r1 = rf(actor)
 	} else {
 		r1 = ret.Error(1)
@@ -211,46 +213,46 @@ type MockRepository_CreateActor_Call struct {
 }
 
 // CreateActor is a helper method to define mock.On call
-//   - actor Actor
+//   - actor db.Actor
 func (_e *MockRepository_Expecter) CreateActor(actor interface{}) *MockRepository_CreateActor_Call {
 	return &MockRepository_CreateActor_Call{Call: _e.mock.On("CreateActor", actor)}
 }
 
-func (_c *MockRepository_CreateActor_Call) Run(run func(actor Actor)) *MockRepository_CreateActor_Call {
+func (_c *MockRepository_CreateActor_Call) Run(run func(actor db.Actor)) *MockRepository_CreateActor_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(Actor))
+		run(args[0].(db.Actor))
 	})
 	return _c
 }
 
-func (_c *MockRepository_CreateActor_Call) Return(_a0 *Actor, _a1 error) *MockRepository_CreateActor_Call {
+func (_c *MockRepository_CreateActor_Call) Return(_a0 *db.Actor, _a1 error) *MockRepository_CreateActor_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockRepository_CreateActor_Call) RunAndReturn(run func(Actor) (*Actor, error)) *MockRepository_CreateActor_Call {
+func (_c *MockRepository_CreateActor_Call) RunAndReturn(run func(db.Actor) (*db.Actor, error)) *MockRepository_CreateActor_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // CreateCredit provides a mock function with given fields: credit
-func (_m *MockRepository) CreateCredit(credit CreditIn) (*CreditIn, error) {
+func (_m *MockRepository) CreateCredit(credit db.CreditIn) (*db.CreditIn, error) {
 	ret := _m.Called(credit)
 
-	var r0 *CreditIn
+	var r0 *db.CreditIn
 	var r1 error
-	if rf, ok := ret.Get(0).(func(CreditIn) (*CreditIn, error)); ok {
+	if rf, ok := ret.Get(0).(func(db.CreditIn) (*db.CreditIn, error)); ok {
 		return rf(credit)
 	}
-	if rf, ok := ret.Get(0).(func(CreditIn) *CreditIn); ok {
+	if rf, ok := ret.Get(0).(func(db.CreditIn) *db.CreditIn); ok {
 		r0 = rf(credit)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*CreditIn)
+			r0 = ret.Get(0).(*db.CreditIn)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(CreditIn) error); ok {
+	if rf, ok := ret.Get(1).(func(db.CreditIn) error); ok {
 		r1 = rf(credit)
 	} else {
 		r1 = ret.Error(1)
@@ -265,46 +267,46 @@ type MockRepository_CreateCredit_Call struct {
 }
 
 // CreateCredit is a helper method to define mock.On call
-//   - credit CreditIn
+//   - credit db.CreditIn
 func (_e *MockRepository_Expecter) CreateCredit(credit interface{}) *MockRepository_CreateCredit_Call {
 	return &MockRepository_CreateCredit_Call{Call: _e.mock.On("CreateCredit", credit)}
 }
 
-func (_c *MockRepository_CreateCredit_Call) Run(run func(credit CreditIn)) *MockRepository_CreateCredit_Call {
+func (_c *MockRepository_CreateCredit_Call) Run(run func(credit db.CreditIn)) *MockRepository_CreateCredit_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(CreditIn))
+		run(args[0].(db.CreditIn))
 	})
 	return _c
 }
 
-func (_c *MockRepository_CreateCredit_Call) Return(_a0 *CreditIn, _a1 error) *MockRepository_CreateCredit_Call {
+func (_c *MockRepository_CreateCredit_Call) Return(_a0 *db.CreditIn, _a1 error) *MockRepository_CreateCredit_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockRepository_CreateCredit_Call) RunAndReturn(run func(CreditIn) (*CreditIn, error)) *MockRepository_CreateCredit_Call {
+func (_c *MockRepository_CreateCredit_Call) RunAndReturn(run func(db.CreditIn) (*db.CreditIn, error)) *MockRepository_CreateCredit_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // CreateMovie provides a mock function with given fields: movie
-func (_m *MockRepository) CreateMovie(movie Movie) (*Movie, error) {
+func (_m *MockRepository) CreateMovie(movie db.Movie) (*db.Movie, error) {
 	ret := _m.Called(movie)
 
-	var r0 *Movie
+	var r0 *db.Movie
 	var r1 error
-	if rf, ok := ret.Get(0).(func(Movie) (*Movie, error)); ok {
+	if rf, ok := ret.Get(0).(func(db.Movie) (*db.Movie, error)); ok {
 		return rf(movie)
 	}
-	if rf, ok := ret.Get(0).(func(Movie) *Movie); ok {
+	if rf, ok := ret.Get(0).(func(db.Movie) *db.Movie); ok {
 		r0 = rf(movie)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*Movie)
+			r0 = ret.Get(0).(*db.Movie)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(Movie) error); ok {
+	if rf, ok := ret.Get(1).(func(db.Movie) error); ok {
 		r1 = rf(movie)
 	} else {
 		r1 = ret.Error(1)
@@ -319,24 +321,24 @@ type MockRepository_CreateMovie_Call struct {
 }
 
 // CreateMovie is a helper method to define mock.On call
-//   - movie Movie
+//   - movie db.Movie
 func (_e *MockRepository_Expecter) CreateMovie(movie interface{}) *MockRepository_CreateMovie_Call {
 	return &MockRepository_CreateMovie_Call{Call: _e.mock.On("CreateMovie", movie)}
 }
 
-func (_c *MockRepository_CreateMovie_Call) Run(run func(movie Movie)) *MockRepository_CreateMovie_Call {
+func (_c *MockRepository_CreateMovie_Call) Run(run func(movie db.Movie)) *MockRepository_CreateMovie_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(Movie))
+		run(args[0].(db.Movie))
 	})
 	return _c
 }
 
-func (_c *MockRepository_CreateMovie_Call) Return(_a0 *Movie, _a1 error) *MockRepository_CreateMovie_Call {
+func (_c *MockRepository_CreateMovie_Call) Return(_a0 *db.Movie, _a1 error) *MockRepository_CreateMovie_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockRepository_CreateMovie_Call) RunAndReturn(run func(Movie) (*Movie, error)) *MockRepository_CreateMovie_Call {
+func (_c *MockRepository_CreateMovie_Call) RunAndReturn(run func(db.Movie) (*db.Movie, error)) *MockRepository_CreateMovie_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -495,19 +497,19 @@ func (_c *MockRepository_GetGraph_Call) RunAndReturn(run func(int, ...int) ([]db
 }
 
 // LatestActor provides a mock function with given fields:
-func (_m *MockRepository) LatestActor() (*Actor, error) {
+func (_m *MockRepository) LatestActor() (*db.Actor, error) {
 	ret := _m.Called()
 
-	var r0 *Actor
+	var r0 *db.Actor
 	var r1 error
-	if rf, ok := ret.Get(0).(func() (*Actor, error)); ok {
+	if rf, ok := ret.Get(0).(func() (*db.Actor, error)); ok {
 		return rf()
 	}
-	if rf, ok := ret.Get(0).(func() *Actor); ok {
+	if rf, ok := ret.Get(0).(func() *db.Actor); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*Actor)
+			r0 = ret.Get(0).(*db.Actor)
 		}
 	}
 
@@ -537,12 +539,12 @@ func (_c *MockRepository_LatestActor_Call) Run(run func()) *MockRepository_Lates
 	return _c
 }
 
-func (_c *MockRepository_LatestActor_Call) Return(_a0 *Actor, _a1 error) *MockRepository_LatestActor_Call {
+func (_c *MockRepository_LatestActor_Call) Return(_a0 *db.Actor, _a1 error) *MockRepository_LatestActor_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockRepository_LatestActor_Call) RunAndReturn(run func() (*Actor, error)) *MockRepository_LatestActor_Call {
+func (_c *MockRepository_LatestActor_Call) RunAndReturn(run func() (*db.Actor, error)) *MockRepository_LatestActor_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -589,19 +591,19 @@ func (_c *MockRepository_Migrate_Call) RunAndReturn(run func() error) *MockRepos
 }
 
 // RandomActor provides a mock function with given fields:
-func (_m *MockRepository) RandomActor() (*Actor, error) {
+func (_m *MockRepository) RandomActor() (*db.Actor, error) {
 	ret := _m.Called()
 
-	var r0 *Actor
+	var r0 *db.Actor
 	var r1 error
-	if rf, ok := ret.Get(0).(func() (*Actor, error)); ok {
+	if rf, ok := ret.Get(0).(func() (*db.Actor, error)); ok {
 		return rf()
 	}
-	if rf, ok := ret.Get(0).(func() *Actor); ok {
+	if rf, ok := ret.Get(0).(func() *db.Actor); ok {
 		r0 = rf()
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*Actor)
+			r0 = ret.Get(0).(*db.Actor)
 		}
 	}
 
@@ -631,30 +633,30 @@ func (_c *MockRepository_RandomActor_Call) Run(run func()) *MockRepository_Rando
 	return _c
 }
 
-func (_c *MockRepository_RandomActor_Call) Return(_a0 *Actor, _a1 error) *MockRepository_RandomActor_Call {
+func (_c *MockRepository_RandomActor_Call) Return(_a0 *db.Actor, _a1 error) *MockRepository_RandomActor_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockRepository_RandomActor_Call) RunAndReturn(run func() (*Actor, error)) *MockRepository_RandomActor_Call {
+func (_c *MockRepository_RandomActor_Call) RunAndReturn(run func() (*db.Actor, error)) *MockRepository_RandomActor_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // RandomActorNotId provides a mock function with given fields: _a0
-func (_m *MockRepository) RandomActorNotId(_a0 int) (*Actor, error) {
+func (_m *MockRepository) RandomActorNotId(_a0 int) (*db.Actor, error) {
 	ret := _m.Called(_a0)
 
-	var r0 *Actor
+	var r0 *db.Actor
 	var r1 error
-	if rf, ok := ret.Get(0).(func(int) (*Actor, error)); ok {
+	if rf, ok := ret.Get(0).(func(int) (*db.Actor, error)); ok {
 		return rf(_a0)
 	}
-	if rf, ok := ret.Get(0).(func(int) *Actor); ok {
+	if rf, ok := ret.Get(0).(func(int) *db.Actor); ok {
 		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*Actor)
+			r0 = ret.Get(0).(*db.Actor)
 		}
 	}
 
@@ -685,30 +687,30 @@ func (_c *MockRepository_RandomActorNotId_Call) Run(run func(_a0 int)) *MockRepo
 	return _c
 }
 
-func (_c *MockRepository_RandomActorNotId_Call) Return(_a0 *Actor, _a1 error) *MockRepository_RandomActorNotId_Call {
+func (_c *MockRepository_RandomActorNotId_Call) Return(_a0 *db.Actor, _a1 error) *MockRepository_RandomActorNotId_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockRepository_RandomActorNotId_Call) RunAndReturn(run func(int) (*Actor, error)) *MockRepository_RandomActorNotId_Call {
+func (_c *MockRepository_RandomActorNotId_Call) RunAndReturn(run func(int) (*db.Actor, error)) *MockRepository_RandomActorNotId_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // SearchActorName provides a mock function with given fields: name
-func (_m *MockRepository) SearchActorName(name string) (*Actor, error) {
+func (_m *MockRepository) SearchActorName(name string) (*db.Actor, error) {
 	ret := _m.Called(name)
 
-	var r0 *Actor
+	var r0 *db.Actor
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string) (*Actor, error)); ok {
+	if rf, ok := ret.Get(0).(func(string) (*db.Actor, error)); ok {
 		return rf(name)
 	}
-	if rf, ok := ret.Get(0).(func(string) *Actor); ok {
+	if rf, ok := ret.Get(0).(func(string) *db.Actor); ok {
 		r0 = rf(name)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*Actor)
+			r0 = ret.Get(0).(*db.Actor)
 		}
 	}
 
@@ -739,32 +741,32 @@ func (_c *MockRepository_SearchActorName_Call) Run(run func(name string)) *MockR
 	return _c
 }
 
-func (_c *MockRepository_SearchActorName_Call) Return(_a0 *Actor, _a1 error) *MockRepository_SearchActorName_Call {
+func (_c *MockRepository_SearchActorName_Call) Return(_a0 *db.Actor, _a1 error) *MockRepository_SearchActorName_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockRepository_SearchActorName_Call) RunAndReturn(run func(string) (*Actor, error)) *MockRepository_SearchActorName_Call {
+func (_c *MockRepository_SearchActorName_Call) RunAndReturn(run func(string) (*db.Actor, error)) *MockRepository_SearchActorName_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Verify provides a mock function with given fields: c
-func (_m *MockRepository) Verify(c Chain) (bool, error) {
+func (_m *MockRepository) Verify(c db.Chain) (bool, error) {
 	ret := _m.Called(c)
 
 	var r0 bool
 	var r1 error
-	if rf, ok := ret.Get(0).(func(Chain) (bool, error)); ok {
+	if rf, ok := ret.Get(0).(func(db.Chain) (bool, error)); ok {
 		return rf(c)
 	}
-	if rf, ok := ret.Get(0).(func(Chain) bool); ok {
+	if rf, ok := ret.Get(0).(func(db.Chain) bool); ok {
 		r0 = rf(c)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
-	if rf, ok := ret.Get(1).(func(Chain) error); ok {
+	if rf, ok := ret.Get(1).(func(db.Chain) error); ok {
 		r1 = rf(c)
 	} else {
 		r1 = ret.Error(1)
@@ -779,14 +781,14 @@ type MockRepository_Verify_Call struct {
 }
 
 // Verify is a helper method to define mock.On call
-//   - c Chain
+//   - c db.Chain
 func (_e *MockRepository_Expecter) Verify(c interface{}) *MockRepository_Verify_Call {
 	return &MockRepository_Verify_Call{Call: _e.mock.On("Verify", c)}
 }
 
-func (_c *MockRepository_Verify_Call) Run(run func(c Chain)) *MockRepository_Verify_Call {
+func (_c *MockRepository_Verify_Call) Run(run func(c db.Chain)) *MockRepository_Verify_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(Chain))
+		run(args[0].(db.Chain))
 	})
 	return _c
 }
@@ -796,29 +798,29 @@ func (_c *MockRepository_Verify_Call) Return(_a0 bool, _a1 error) *MockRepositor
 	return _c
 }
 
-func (_c *MockRepository_Verify_Call) RunAndReturn(run func(Chain) (bool, error)) *MockRepository_Verify_Call {
+func (_c *MockRepository_Verify_Call) RunAndReturn(run func(db.Chain) (bool, error)) *MockRepository_Verify_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // VerifyWithEdges provides a mock function with given fields: c
-func (_m *MockRepository) VerifyWithEdges(c Chain) ([]*Edge, error) {
+func (_m *MockRepository) VerifyWithEdges(c db.Chain) ([]*db.Edge, error) {
 	ret := _m.Called(c)
 
-	var r0 []*Edge
+	var r0 []*db.Edge
 	var r1 error
-	if rf, ok := ret.Get(0).(func(Chain) ([]*Edge, error)); ok {
+	if rf, ok := ret.Get(0).(func(db.Chain) ([]*db.Edge, error)); ok {
 		return rf(c)
 	}
-	if rf, ok := ret.Get(0).(func(Chain) []*Edge); ok {
+	if rf, ok := ret.Get(0).(func(db.Chain) []*db.Edge); ok {
 		r0 = rf(c)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*Edge)
+			r0 = ret.Get(0).([]*db.Edge)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(Chain) error); ok {
+	if rf, ok := ret.Get(1).(func(db.Chain) error); ok {
 		r1 = rf(c)
 	} else {
 		r1 = ret.Error(1)
@@ -833,24 +835,24 @@ type MockRepository_VerifyWithEdges_Call struct {
 }
 
 // VerifyWithEdges is a helper method to define mock.On call
-//   - c Chain
+//   - c db.Chain
 func (_e *MockRepository_Expecter) VerifyWithEdges(c interface{}) *MockRepository_VerifyWithEdges_Call {
 	return &MockRepository_VerifyWithEdges_Call{Call: _e.mock.On("VerifyWithEdges", c)}
 }
 
-func (_c *MockRepository_VerifyWithEdges_Call) Run(run func(c Chain)) *MockRepository_VerifyWithEdges_Call {
+func (_c *MockRepository_VerifyWithEdges_Call) Run(run func(c db.Chain)) *MockRepository_VerifyWithEdges_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(Chain))
+		run(args[0].(db.Chain))
 	})
 	return _c
 }
 
-func (_c *MockRepository_VerifyWithEdges_Call) Return(_a0 []*Edge, _a1 error) *MockRepository_VerifyWithEdges_Call {
+func (_c *MockRepository_VerifyWithEdges_Call) Return(_a0 []*db.Edge, _a1 error) *MockRepository_VerifyWithEdges_Call {
 	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
-func (_c *MockRepository_VerifyWithEdges_Call) RunAndReturn(run func(Chain) ([]*Edge, error)) *MockRepository_VerifyWithEdges_Call {
+func (_c *MockRepository_VerifyWithEdges_Call) RunAndReturn(run func(db.Chain) ([]*db.Edge, error)) *MockRepository_VerifyWithEdges_Call {
 	_c.Call.Return(run)
 	return _c
 }

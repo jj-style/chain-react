@@ -11,14 +11,15 @@ import (
 
 	"github.com/jj-style/chain-react/src/config"
 	"github.com/jj-style/chain-react/src/db"
-	"github.com/jj-style/chain-react/src/search"
-	"github.com/jj-style/chain-react/src/tmdb"
+	dbMocks "github.com/jj-style/chain-react/src/db/mocks"
+	searchMocks "github.com/jj-style/chain-react/src/search/mocks"
+	tmdbMocks "github.com/jj-style/chain-react/src/tmdb/mocks"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
-func givenServer(mockDb *db.MockRepository, mockTMDb *tmdb.MockTMDb, mockSearch *search.MockRepository) Server {
+func givenServer(mockDb *dbMocks.MockRepository, mockTMDb *tmdbMocks.MockTMDb, mockSearch *searchMocks.MockRepository) Server {
 	// setup server
 	srv := Server{
 		Router: newRouter(true),
@@ -35,9 +36,9 @@ func givenServer(mockDb *db.MockRepository, mockTMDb *tmdb.MockTMDb, mockSearch 
 
 func TestGetRandomActor_Happy(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	actor := db.Actor{Id: 1, Name: "Jackie Chan", Popularity: 100}
 	mockDb.EXPECT().RandomActor().Return(&actor, nil)
@@ -61,9 +62,9 @@ func TestGetRandomActor_Happy(t *testing.T) {
 
 func TestGetRandomActor_Error(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	mockDb.EXPECT().RandomActor().Return(nil, errors.New("boom"))
 
@@ -81,9 +82,9 @@ func TestGetRandomActor_Error(t *testing.T) {
 
 func TestGetRandomActorNot_Happy(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	jc := db.Actor{Id: 1, Name: "Jackie Chan", Popularity: 100}
 	ct := db.Actor{Id: 2, Name: "Chris Tucker", Popularity: 100}
@@ -108,9 +109,9 @@ func TestGetRandomActorNot_Happy(t *testing.T) {
 
 func TestGetRandomActorNot_InvalidIdParam(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	// create server
 	srv := givenServer(mockDb, mockTMDb, mockSearch)
@@ -126,9 +127,9 @@ func TestGetRandomActorNot_InvalidIdParam(t *testing.T) {
 
 func TestGetRandomActorNot_Error(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	mockDb.EXPECT().RandomActorNotId(1).Return(nil, errors.New("boom"))
 
@@ -146,9 +147,9 @@ func TestGetRandomActorNot_Error(t *testing.T) {
 
 func TestVerifyEdgesHappy(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	jc := db.Actor{Id: 1, Name: "Jackie Chan", Popularity: 100}
 	ct := db.Actor{Id: 2, Name: "Chris Tucker", Popularity: 100}
@@ -201,9 +202,9 @@ func TestVerifyEdgesHappy(t *testing.T) {
 
 func TestVerifyEdgesUnhappy(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	mockDb.EXPECT().VerifyWithEdges(db.Chain{1, 2}).Return(
 		[]*db.Edge{},
@@ -239,9 +240,9 @@ func TestVerifyEdgesUnhappy(t *testing.T) {
 
 func TestVerifyEdgesBadRequest(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	// create server
 	srv := givenServer(mockDb, mockTMDb, mockSearch)
@@ -260,9 +261,9 @@ func TestVerifyEdgesBadRequest(t *testing.T) {
 
 func TestVerifyHappy(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	mockDb.EXPECT().Verify(db.Chain{1, 2}).Return(true, nil)
 
@@ -294,9 +295,9 @@ func TestVerifyHappy(t *testing.T) {
 
 func TestVerifyUnhappy(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	mockDb.EXPECT().Verify(db.Chain{1, 2}).Return(false, errors.New("boom"))
 
@@ -328,9 +329,9 @@ func TestVerifyUnhappy(t *testing.T) {
 
 func TestVerifyBadRequest(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	// create server
 	srv := givenServer(mockDb, mockTMDb, mockSearch)
@@ -349,9 +350,9 @@ func TestVerifyBadRequest(t *testing.T) {
 
 func TestGetGraph_UnhappyBadRequestJson(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	// create server
 	srv := givenServer(mockDb, mockTMDb, mockSearch)
@@ -370,9 +371,9 @@ func TestGetGraph_UnhappyBadRequestJson(t *testing.T) {
 
 func TestGetGraph_UnhappyBadRequestLength(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	// create server
 	srv := givenServer(mockDb, mockTMDb, mockSearch)
@@ -391,9 +392,9 @@ func TestGetGraph_UnhappyBadRequestLength(t *testing.T) {
 
 func TestGetGraph_UnhappyError(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	mockDb.EXPECT().GetGraph(4, 1, 2).Return([]dbtype.Path{}, errors.New("boom"))
 
@@ -414,9 +415,9 @@ func TestGetGraph_UnhappyError(t *testing.T) {
 
 func TestGetGraph_Happy(t *testing.T) {
 	// setup mocks
-	mockDb := db.NewMockRepository(t)
-	mockTMDb := tmdb.NewMockTMDb(t)
-	mockSearch := search.NewMockRepository(t)
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
 
 	mockDb.EXPECT().GetGraph(4, 1, 2).Return([]dbtype.Path{
 		{
