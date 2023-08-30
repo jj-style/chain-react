@@ -5,8 +5,8 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN apk add --no-cache make
-RUN make build
+RUN apk add --no-cache just
+RUN just build
 
 
 FROM scratch
