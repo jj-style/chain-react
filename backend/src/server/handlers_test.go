@@ -13,6 +13,7 @@ import (
 	"github.com/jj-style/chain-react/src/db"
 	"github.com/jj-style/chain-react/src/search"
 	"github.com/jj-style/chain-react/src/tmdb"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -344,4 +345,107 @@ func TestVerifyBadRequest(t *testing.T) {
 
 	// check response
 	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetGraph_UnhappyBadRequestJson(t *testing.T) {
+	// setup mocks
+	mockDb := db.NewMockRepository(t)
+	mockTMDb := tmdb.NewMockTMDb(t)
+	mockSearch := search.NewMockRepository(t)
+
+	// create server
+	srv := givenServer(mockDb, mockTMDb, mockSearch)
+
+	// handle request
+	jsonBody := []byte(`{"bad": "json"}`)
+	bodyReader := bytes.NewReader(jsonBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodPost, "/api/graph", bodyReader)
+	srv.Router.ServeHTTP(w, req)
+
+	// check response
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetGraph_UnhappyBadRequestLength(t *testing.T) {
+	// setup mocks
+	mockDb := db.NewMockRepository(t)
+	mockTMDb := tmdb.NewMockTMDb(t)
+	mockSearch := search.NewMockRepository(t)
+
+	// create server
+	srv := givenServer(mockDb, mockTMDb, mockSearch)
+
+	// handle request
+	jsonBody := []byte(`{"chain": [1, 2], "length": 10}`)
+	bodyReader := bytes.NewReader(jsonBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodPost, "/api/graph", bodyReader)
+	srv.Router.ServeHTTP(w, req)
+
+	// check response
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetGraph_UnhappyError(t *testing.T) {
+	// setup mocks
+	mockDb := db.NewMockRepository(t)
+	mockTMDb := tmdb.NewMockTMDb(t)
+	mockSearch := search.NewMockRepository(t)
+
+	mockDb.EXPECT().GetGraph(4, 1, 2).Return([]dbtype.Path{}, errors.New("boom"))
+
+	// create server
+	srv := givenServer(mockDb, mockTMDb, mockSearch)
+
+	// handle request
+	jsonBody := []byte(`{"chain": [1, 2], "length": 4}`)
+	bodyReader := bytes.NewReader(jsonBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodPost, "/api/graph", bodyReader)
+	srv.Router.ServeHTTP(w, req)
+
+	// check response
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+}
+
+func TestGetGraph_Happy(t *testing.T) {
+	// setup mocks
+	mockDb := db.NewMockRepository(t)
+	mockTMDb := tmdb.NewMockTMDb(t)
+	mockSearch := search.NewMockRepository(t)
+
+	mockDb.EXPECT().GetGraph(4, 1, 2).Return([]dbtype.Path{
+		{
+			Nodes: []dbtype.Node{
+				{ElementId: "n1"},
+				{ElementId: "n2"},
+			},
+			Relationships: []dbtype.Relationship{
+				{
+					StartElementId: "n1",
+					EndElementId:   "n2",
+					ElementId:      "r1",
+					Type:           "relationshipType",
+				},
+			},
+		},
+	}, nil)
+
+	// create server
+	srv := givenServer(mockDb, mockTMDb, mockSearch)
+
+	// handle request
+	jsonBody := []byte(`{"chain": [1, 2], "length": 4}`)
+	bodyReader := bytes.NewReader(jsonBody)
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodPost, "/api/graph", bodyReader)
+	srv.Router.ServeHTTP(w, req)
+
+	// check response
+	assert.Equal(t, http.StatusOK, w.Code)
 }
