@@ -18,8 +18,6 @@ func (s *Server) handleGetRandomActor(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to get random actor: %v", err)})
 		return
 	}
-	fmt.Printf("%+v\n", actor)
-	fmt.Printf("%+v\n", s.Log)
 	s.Log.WithField("actor", actor).Debug("got random actor from db")
 	c.JSON(http.StatusOK, actor)
 }
