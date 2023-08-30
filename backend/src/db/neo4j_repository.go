@@ -478,7 +478,7 @@ func (n *Neo4jRepository) GetGraph(length int, nodes ...int) ([]dbtype.Path, err
 			strings.Join(nodeIds, ", "),
 			4,
 		)
-		fmt.Println(query)
+		// fmt.Println(query)
 		runTimer := time.Now()
 		res, err := tx.Run(ctx, query, nil)
 		if err != nil {

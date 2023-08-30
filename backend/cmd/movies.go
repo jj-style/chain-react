@@ -53,8 +53,6 @@ func runGetMovies(ctx context.Context, c *config.RConfig) {
 	credits := make(chan *go_tmdb.PersonMovieCredits)
 	reducer := func() error {
 		for cr := range credits {
-			// fmt.Println(cr)
-
 			// insert movie first (if not exist)
 			for _, mc := range cr.Cast {
 				m := db.Movie{Id: mc.ID, Title: mc.Title}

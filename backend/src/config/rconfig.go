@@ -4,6 +4,7 @@ import (
 	"github.com/jj-style/chain-react/src/db"
 	"github.com/jj-style/chain-react/src/search"
 	"github.com/jj-style/chain-react/src/tmdb"
+	go_tmdb "github.com/jj-style/go-tmdb"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/meilisearch/meilisearch-go"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
@@ -33,7 +34,19 @@ func NewRuntimeConfig(c *Config) RConfig {
 		log.Fatalf("unknown DB driver: %s", c.Db.Driver)
 	}
 
-	t := tmdb.NewClient(c.Tmdb.ApiKey)
+	logger := log.StandardLogger()
+	loglvl := log.InfoLevel
+	if p, err := log.ParseLevel(viper.GetString("log.level")); err == nil {
+		loglvl = p
+	} else {
+		log.Fatalf("error parsing log level: %v", err.Error())
+	}
+	logger.SetLevel(loglvl)
+
+	tcfg := go_tmdb.Config{
+		APIKey: c.Tmdb.ApiKey,
+	}
+	t := tmdb.NewClient(go_tmdb.Init(tcfg), logger)
 
 	m := meilisearch.NewClient(meilisearch.ClientConfig{
 		Host:   c.Meilisearch.Host,
@@ -46,15 +59,6 @@ func NewRuntimeConfig(c *Config) RConfig {
 		Password: c.Redis.Password,
 		DB:       c.Redis.Db,
 	})
-
-	logger := log.StandardLogger()
-	loglvl := log.InfoLevel
-	if p, err := log.ParseLevel(viper.GetString("log.level")); err == nil {
-		loglvl = p
-	} else {
-		log.Fatalf("error parsing log level: %v", err.Error())
-	}
-	logger.SetLevel(loglvl)
 
 	return RConfig{
 		Log:    logger,

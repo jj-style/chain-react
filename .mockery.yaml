@@ -1,0 +1,17 @@
+filename: "mock_{{.InterfaceName}}.go"
+dir: "{{.InterfaceDir}}/mocks"
+mockname: "Mock{{.InterfaceName}}"
+outpkg: "{{.PackageName}}"
+# inpackage: True 
+with-expecter: True 
+packages:
+  github.com/jj-style/chain-react/src/search:
+    interfaces:
+      Repository:
+  github.com/jj-style/chain-react/src/db:
+    interfaces:
+      Repository:
+  github.com/jj-style/chain-react/src/tmdb:
+    interfaces:
+      TMDb:
+      TMDbClient:

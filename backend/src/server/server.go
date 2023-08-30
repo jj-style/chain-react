@@ -21,7 +21,7 @@ func NewServer(config *config.RConfig) *Server {
 	}
 
 	s := &Server{
-		Router: newRouter(),
+		Router: newRouter(viper.GetBool("devMode")),
 		Config: config,
 		Log:    logger,
 	}
