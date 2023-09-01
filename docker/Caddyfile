@@ -19,11 +19,11 @@
 	}
 }
 
-search.chainreact.jjstyle.co.uk {
+search.chain-react.xyz {
 	reverse_proxy meilisearch:7700
 }
 
-chainreact.jjstyle.co.uk {
+chain-react.xyz {
 	encode gzip
 	handle /api/* {
 		reverse_proxy backend:8080
