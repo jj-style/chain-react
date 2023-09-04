@@ -1,21 +1,20 @@
 import withLayout from "./layout";
-import { Graph } from "../components";
+import { Graph, StartEnd, loadOptions } from "../components";
 import { useEffect, useState } from "react";
 import ListGroup from "react-bootstrap/ListGroup";
 import Button from "react-bootstrap/Button";
+import Collapse from "react-bootstrap/Collapse";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Row from "react-bootstrap/Row";
 import InputGroup from "react-bootstrap/InputGroup";
 import Spinner from "react-bootstrap/Spinner";
-import { Shuffle, Trash } from "react-bootstrap-icons";
+import { Trash, ArrowRightShort, ArrowDownShort } from "react-bootstrap-icons";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 
 import AsyncSelect from "react-select/async";
-
-import { MEILI_CLIENT } from "../constants";
 
 const Root = () => {
   const queryClient = useQueryClient();
@@ -28,6 +27,7 @@ const Root = () => {
   const [graphLength, setGraphLength] = useState(4);
   const [graphData, setGraphData] = useState(null);
   const [isLoadingGraphData, setIsLoadingGraphData] = useState(false);
+  const [openHelp, setOpenHelp] = useState(false);
 
   // dev state init
   // useEffect(() => {
@@ -101,7 +101,7 @@ const Root = () => {
           alert(`${err?.response?.status}: ${err?.response?.data?.error}`);
         });
     }
-  }, [verification, start, end, graphLength, setIsLoadingGraphData]);
+  }, [verification, start, end, chain, graphLength, setIsLoadingGraphData]);
 
   // get whether chain is valid to send to server for verification
   let validateChain = () => {
@@ -144,6 +144,25 @@ const Root = () => {
 
   return (
     <>
+      <span
+        onClick={() => setOpenHelp(!openHelp)}
+        aria-controls="collapse-help"
+        aria-expanded={openHelp}
+      >
+        Instructions {(openHelp && <ArrowDownShort />) || <ArrowRightShort />}
+      </span>
+      <Collapse in={openHelp}>
+        <div id="collapse-help">
+          <ol>
+            <li>Enter a start and end actor, or select at random</li>
+            <li>
+              find a link between them via common actors they have both acted
+              with in movies
+            </li>
+            <li>The shorter the path the better!</li>
+          </ol>
+        </div>
+      </Collapse>
       <Row className="my-2 mx-1">
         <ListGroup className="d-flex justify-content-between">
           {/* START ACTOR */}
@@ -296,55 +315,6 @@ const Root = () => {
   );
 };
 
-// Component for start/end of chain
-const StartEnd = ({
-  setToSet,
-  currentState,
-  setState,
-  bgVariant,
-  placeholder,
-}) => {
-  return (
-    <InputGroup>
-      <AsyncSelect
-        loadOptions={loadOptions}
-        cacheOptions={true}
-        defaultOptions={false}
-        isClearable={true}
-        placeholder={placeholder}
-        value={
-          currentState === null
-            ? null
-            : { label: currentState?.name, value: currentState?.id }
-        }
-        onChange={(n) =>
-          setState(n === null ? n : { id: n.value, name: n.label })
-        }
-        className="flex-fill"
-        menuPortalTarget={document.body}
-        styles={{
-          menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-          control: (base, props) => ({
-            ...base,
-            backgroundColor: `var(--bs-${bgVariant})`,
-          }),
-          singleValue: (provided) => ({
-            ...provided,
-            color: "white",
-          }),
-          placeholder: (provided) => ({
-            ...provided,
-            color: "white",
-          }),
-        }}
-      />
-      <Button variant="secondary" onClick={() => setToSet(() => setState)}>
-        <Shuffle />
-      </Button>
-    </InputGroup>
-  );
-};
-
 // helper to post the chain for verification
 const postVerifyChain = async (data) => {
   const { data: response } = await axios.post(
@@ -352,21 +322,6 @@ const postVerifyChain = async (data) => {
     data
   );
   return response;
-};
-
-// load selectable actor options based on search query
-const loadOptions = (inputValue, callback) => {
-  setTimeout(() => {
-    MEILI_CLIENT.index("actors")
-      .search(inputValue, { sort: ["popularity:desc"] })
-      .then((resp) => {
-        const data = resp.hits.map((h, _) => ({
-          value: h?.id,
-          label: h?.name,
-        }));
-        callback(data);
-      });
-  }, 500);
 };
 
 export default withLayout(Root, "Home");

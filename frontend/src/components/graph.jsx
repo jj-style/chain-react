@@ -59,7 +59,7 @@ const Graph = ({ start, end, chain, data, verification }) => {
           },
           edgeReducer: (_, e) => {
             e.label = e.character;
-            if (pathEdges.includes(e.id)) {
+            if (pathEdges?.includes(e.id)) {
               e.color = "green";
               e.size = 1;
             }
