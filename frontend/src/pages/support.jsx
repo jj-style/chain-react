@@ -100,7 +100,7 @@ const Support = () => {
             target="_blank"
             rel="noreferrer"
           >
-            bymeacoffee
+            buymeacoffee
           </a>
         </li>
       </ul>
