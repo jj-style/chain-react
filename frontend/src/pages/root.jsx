@@ -1,5 +1,5 @@
 import withLayout from "./layout";
-import { Graph, StartEnd, loadOptions } from "../components";
+import { Graph, StartEnd, loadOptions, Summary, Results } from "../components";
 import { useEffect, useState } from "react";
 import ListGroup from "react-bootstrap/ListGroup";
 import Button from "react-bootstrap/Button";
@@ -30,11 +30,11 @@ const Root = () => {
   const [openHelp, setOpenHelp] = useState(false);
 
   // dev state init
-  // useEffect(() => {
-  //   setStart({ name: "Bruce Willis", id: 62 });
-  //   setEnd({ name: "Harrison Ford", id: 3 });
-  //   setChain([{ name: "Gary Oldman", id: 64 }]);
-  // }, []);
+  useEffect(() => {
+    setStart({ name: "Leonardo DiCaprio", id: 6193 });
+    setEnd({ name: "Tom Cruise", id: 500 });
+    setChain([{ name: "Ken Watanabe", id: 3899 }]);
+  }, []);
 
   // random url based on whether start/end are selected
   let randomUrlPath =
@@ -282,6 +282,25 @@ const Root = () => {
           </Spinner>
         </div>
       )}
+      {verification?.valid &&
+        start &&
+        end &&
+        !isLoadingGraphData &&
+        !isLoadingVerification &&
+        graphData !== null && (
+          <Results
+            Summary={<Summary data={verification} />}
+            Graph={
+              <Graph
+                start={start.id}
+                end={end.id}
+                chain={chain.filter((x) => x !== null).map((x) => x.id)}
+                data={graphData}
+                verification={verification}
+              />
+            }
+          />
+        )}
       {!isLoadingVerification &&
         !isLoadingGraphData &&
         verification?.valid &&
@@ -302,13 +321,6 @@ const Root = () => {
                 {}
               )}
             /> */}
-            <Graph
-              start={start.id}
-              end={end.id}
-              chain={chain.filter((x) => x !== null).map((x) => x.id)}
-              data={graphData}
-              verification={verification}
-            />
           </div>
         )}
     </>
