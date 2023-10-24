@@ -3,6 +3,7 @@ package tmdb
 import (
 	"context"
 
+	"github.com/jj-style/chain-react/src/config"
 	go_tmdb "github.com/jj-style/go-tmdb"
 	log "github.com/sirupsen/logrus"
 )
@@ -39,4 +40,11 @@ func NewClient(client TMDbClient, logger *log.Logger) TMDb {
 		client: client,
 		log:    log.StandardLogger(),
 	}
+}
+
+func NewTMDb(conf *config.TmdbConfig, logger *log.Logger) TMDb {
+	tcfg := go_tmdb.Config{
+		APIKey: conf.ApiKey,
+	}
+	return NewClient(go_tmdb.Init(tcfg), logger)
 }

@@ -9,8 +9,8 @@ import (
 	"os/signal"
 	"strings"
 
-	"github.com/jj-style/chain-react/src/config"
 	"github.com/jj-style/chain-react/src/db"
+	"github.com/jj-style/chain-react/src/server"
 	go_tmdb "github.com/jj-style/go-tmdb"
 	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
@@ -27,8 +27,8 @@ var actorsCmd = &cobra.Command{
 	Use:   "actors",
 	Short: "fetch all actors from TMDB",
 	Run: func(cmd *cobra.Command, args []string) {
-		c := cmd.Context().Value(config.RConfig{}).(config.RConfig)
-		runGetActors(cmd.Context(), &c)
+		s := cmd.Context().Value(server.Server{}).(*server.Server)
+		runGetActors(cmd.Context(), s)
 	},
 }
 
@@ -48,7 +48,7 @@ func init() {
 	actorsCmd.Flags().StringVarP(&actor_file, "file", "f", "", "File to load actors from")
 }
 
-func runGetActors(ctx context.Context, c *config.RConfig) {
+func runGetActors(ctx context.Context, s *server.Server) {
 	people := make(chan *go_tmdb.Person)
 
 	// listen for interrup signals to tear down the errgroup
@@ -58,7 +58,7 @@ func runGetActors(ctx context.Context, c *config.RConfig) {
 	go func() {
 		for sig := range signals {
 			// sig is a ^C, handle it
-			c.Log.WithField("signal", sig).Info("received signal, disposing resources")
+			s.Log.WithField("signal", sig).Info("received signal, disposing resources")
 			cancel()
 		}
 	}()
@@ -68,17 +68,17 @@ func runGetActors(ctx context.Context, c *config.RConfig) {
 		newPeople := make([]db.Actor, 0)
 		for p := range people {
 			// ignore duplicates
-			if exist, err := c.Redis.Get(ctx, fmt.Sprintf("actor:%d", p.ID)).Bool(); err == nil && exist {
-				c.Log.Warnf("skipping duplicate person(%d - %s)", p.ID, p.Name)
+			if exist, err := s.Cache.Get(ctx, fmt.Sprintf("actor:%d", p.ID)).Bool(); err == nil && exist {
+				s.Log.Warnf("skipping duplicate person(%d - %s)", p.ID, p.Name)
 				continue
 			}
 			if p.Popularity < 10 {
-				c.Log.Warnf("skipping person(%d - %s) as popularity(%f) < 10", p.ID, p.Name, p.Popularity)
+				s.Log.Warnf("skipping person(%d - %s) as popularity(%f) < 10", p.ID, p.Name, p.Popularity)
 				continue
 			}
-			c.Log.Infof("==> saving person(%d - %s)\n", p.ID, p.Name)
+			s.Log.Infof("==> saving person(%d - %s)\n", p.ID, p.Name)
 			actor := db.ActorFromTmdbPerson(p)
-			_, err := c.Repo.CreateActor(actor)
+			_, err := s.Repo.CreateActor(actor)
 			if err != nil {
 				fmt.Printf("error storing %v: %v\n", actor, err)
 			}
@@ -86,15 +86,15 @@ func runGetActors(ctx context.Context, c *config.RConfig) {
 		}
 
 		// Index every fetched actor to the search DB
-		if err := c.Search.AddDocuments(newPeople, "actors"); err != nil {
+		if err := s.Search.AddDocuments(newPeople, "actors"); err != nil {
 			fmt.Printf("error indexing new people: %v\n", err)
 		}
 
 		// Keep track of all actors in redis
 		for _, p := range newPeople {
 			// Don't use ctx as it's been cancelled at this point
-			if err := c.Redis.Set(context.TODO(), fmt.Sprintf("actor:%d", p.Id), true, 0).Err(); err != nil {
-				c.Log.Warnf("error saving actor:%d to redis: %v", p.Id, err)
+			if err := s.Cache.Set(context.TODO(), fmt.Sprintf("actor:%d", p.Id), true, 0).Err(); err != nil {
+				s.Log.Warnf("error saving actor:%d to redis: %v", p.Id, err)
 			}
 		}
 
@@ -102,32 +102,32 @@ func runGetActors(ctx context.Context, c *config.RConfig) {
 	}
 	var err error
 	if update_missing {
-		err = updateMissingActors(ctx, c, people, reducer)
+		err = updateMissingActors(ctx, s, people, reducer)
 	} else if actor_file != "" {
-		err = getActorsFromFile(ctx, c, people, reducer, actor_file)
+		err = getActorsFromFile(ctx, s, people, reducer, actor_file)
 	} else {
-		err = c.Tmdb.GetAllActors(ctx, people, reducer)
+		err = s.Tmdb.GetAllActors(ctx, people, reducer)
 	}
 	if err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func updateMissingActors(ctx context.Context, c *config.RConfig, people chan *go_tmdb.Person, reducer func() error) error {
+func updateMissingActors(ctx context.Context, s *server.Server, people chan *go_tmdb.Person, reducer func() error) error {
 	var err error = nil
-	if latest, errLatest := c.Repo.LatestActor(); errLatest != nil {
+	if latest, errLatest := s.Repo.LatestActor(); errLatest != nil {
 		if errors.Is(errLatest, db.ErrNotExists) {
-			err = c.Tmdb.GetAllActors(ctx, people, reducer)
+			err = s.Tmdb.GetAllActors(ctx, people, reducer)
 		} else {
 			log.Fatalln("getting latest actor: ", errLatest)
 		}
 	} else {
-		err = c.Tmdb.GetActorsFrom(ctx, people, reducer, latest.Id)
+		err = s.Tmdb.GetActorsFrom(ctx, people, reducer, latest.Id)
 	}
 	return err
 }
 
-func getActorsFromFile(ctx context.Context, c *config.RConfig, people chan *go_tmdb.Person, reducer func() error, file string) error {
+func getActorsFromFile(ctx context.Context, c *server.Server, people chan *go_tmdb.Person, reducer func() error, file string) error {
 	f, err := os.Open(file)
 	if err != nil {
 		return err

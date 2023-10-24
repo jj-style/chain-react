@@ -1,29 +1,29 @@
 package config
 
 type Config struct {
-	Tmdb        tmdbConfig        `mapstructure:"tmdb"`
-	Db          dbConfig          `mapstructure:"db"`
-	Meilisearch meilisearchConfig `mapstructure:"meilisearch"`
-	Redis       redisConfig
+	Tmdb        TmdbConfig        `mapstructure:"tmdb"`
+	Db          DbConfig          `mapstructure:"db"`
+	Meilisearch MeilisearchConfig `mapstructure:"meilisearch"`
+	Redis       RedisConfig
 }
 
-type tmdbConfig struct {
+type TmdbConfig struct {
 	ApiKey string `mapstructure:"api_key"`
 }
 
-type dbConfig struct {
+type DbConfig struct {
 	Driver   string `mapstructure:"driver"`
 	Uri      string `mapstructure:"uri"`
 	Username string `mapstructure:"username"`
 	Password string `mapstructure:"password"`
 }
 
-type meilisearchConfig struct {
+type MeilisearchConfig struct {
 	Host   string `mapstructure:"host"`
 	ApiKey string `mapstructure:"api_key"`
 }
 
-type redisConfig struct {
+type RedisConfig struct {
 	Address  string `mapstructure:"address"`
 	Password string `mapstructure:"password"`
 	Db       int    `mapstructure:"db"`

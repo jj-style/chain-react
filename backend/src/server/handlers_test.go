@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/jj-style/chain-react/src/config"
 	"github.com/jj-style/chain-react/src/db"
 	dbMocks "github.com/jj-style/chain-react/src/db/mocks"
 	searchMocks "github.com/jj-style/chain-react/src/search/mocks"
@@ -23,12 +22,10 @@ func givenServer(mockDb *dbMocks.MockRepository, mockTMDb *tmdbMocks.MockTMDb, m
 	// setup server
 	srv := Server{
 		Router: newRouter(true),
-		Config: &config.RConfig{
-			Repo:   mockDb,
-			Tmdb:   mockTMDb,
-			Search: mockSearch,
-		},
-		Log: logrus.New(),
+		Repo:   mockDb,
+		Tmdb:   mockTMDb,
+		Search: mockSearch,
+		Log:    logrus.New(),
 	}
 	srv.setupRoutes()
 	return srv

@@ -12,7 +12,7 @@ import (
 )
 
 func (s *Server) handleGetRandomActor(c *gin.Context) {
-	actor, err := s.Config.Repo.RandomActor()
+	actor, err := s.Repo.RandomActor()
 	if err != nil {
 		s.Log.WithField("error", err).Error("getting random actor from db")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to get random actor: %v", err)})
@@ -32,7 +32,7 @@ func (s *Server) handleGetRandomActorNotId(c *gin.Context) {
 		return
 	}
 
-	actor, err := s.Config.Repo.RandomActorNotId(int(id))
+	actor, err := s.Repo.RandomActorNotId(int(id))
 	if err != nil {
 		s.Log.WithField("error", err).Error("getting random actor from db")
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to get random actor: %v", err)})
@@ -58,7 +58,7 @@ func (s *Server) handleVerifyEdges(c *gin.Context) {
 		return
 	}
 
-	edges, err := s.Config.Repo.VerifyWithEdges(req.Chain)
+	edges, err := s.Repo.VerifyWithEdges(req.Chain)
 
 	var errs = ""
 	var code = http.StatusOK
@@ -91,7 +91,7 @@ func (s *Server) handleVerify(c *gin.Context) {
 		return
 	}
 
-	valid, err := s.Config.Repo.Verify(req.Chain)
+	valid, err := s.Repo.Verify(req.Chain)
 
 	var errs = ""
 	var code = http.StatusOK
@@ -128,7 +128,7 @@ func (s *Server) handleGetGraph(c *gin.Context) {
 		length = req.Length
 	}
 
-	g, err := s.Config.Repo.GetGraph(length, req.Chain...)
+	g, err := s.Repo.GetGraph(length, req.Chain...)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

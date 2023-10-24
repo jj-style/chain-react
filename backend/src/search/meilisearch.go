@@ -10,10 +10,10 @@ type MeilisearchRepository struct {
 	log    *log.Logger
 }
 
-func NewMeilisearchRepository(c *meilisearch.Client) MeilisearchRepository {
+func NewMeilisearchRepository(c *meilisearch.Client, l *log.Logger) MeilisearchRepository {
 	return MeilisearchRepository{
 		client: c,
-		log:    log.StandardLogger(),
+		log:    l,
 	}
 }
 

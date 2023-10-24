@@ -1,12 +1,9 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
 	"context"
 
-	"github.com/jj-style/chain-react/src/config"
+	"github.com/jj-style/chain-react/src/server"
 	"github.com/spf13/cobra"
 )
 
@@ -15,8 +12,8 @@ var indexCmd = &cobra.Command{
 	Use:   "index",
 	Short: "Index data into the search database",
 	Run: func(cmd *cobra.Command, args []string) {
-		c := cmd.Context().Value(config.RConfig{}).(config.RConfig)
-		runIndex(cmd.Context(), &c)
+		s := cmd.Context().Value(server.Server{}).(*server.Server)
+		runIndex(cmd.Context(), s)
 	},
 }
 
@@ -34,7 +31,7 @@ func init() {
 	// indexCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func runIndex(ctx context.Context, c *config.RConfig) {
+func runIndex(ctx context.Context, c *server.Server) {
 	actors, err := c.Repo.AllActors()
 	if err != nil {
 		c.Log.Fatalln("getting actors: ", err)

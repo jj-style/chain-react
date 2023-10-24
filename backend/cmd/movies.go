@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/jj-style/chain-react/src/config"
 	"github.com/jj-style/chain-react/src/db"
+	"github.com/jj-style/chain-react/src/server"
 	go_tmdb "github.com/jj-style/go-tmdb"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
@@ -25,8 +25,8 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		c := cmd.Context().Value(config.RConfig{}).(config.RConfig)
-		runGetMovies(cmd.Context(), &c)
+		s := cmd.Context().Value(server.Server{}).(*server.Server)
+		runGetMovies(cmd.Context(), s)
 	},
 }
 
@@ -43,8 +43,8 @@ func init() {
 	// is called directly, e.g.:
 	// moviesCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
-func runGetMovies(ctx context.Context, c *config.RConfig) {
-	actors, err := c.Repo.AllActors()
+func runGetMovies(ctx context.Context, s *server.Server) {
+	actors, err := s.Repo.AllActors()
 	if err != nil {
 		log.Fatalln("getting all actors: ", err)
 	}
@@ -57,24 +57,24 @@ func runGetMovies(ctx context.Context, c *config.RConfig) {
 			for _, mc := range cr.Cast {
 				m := db.Movie{Id: mc.ID, Title: mc.Title}
 				// create movies once
-				if exist, err := c.Redis.Get(ctx, fmt.Sprintf("movie:%d", m.Id)).Bool(); err != nil || !exist {
-					_, err = c.Repo.CreateMovie(m)
+				if exist, err := s.Cache.Get(ctx, fmt.Sprintf("movie:%d", m.Id)).Bool(); err != nil || !exist {
+					_, err = s.Repo.CreateMovie(m)
 					if err != nil {
 						if errors.Is(err, db.ErrDuplicate) {
-							c.Log.Debugf("skip creating existing movie(%v)", m)
+							s.Log.Debugf("skip creating existing movie(%v)", m)
 						} else {
-							c.Log.Errorf("creating movie(%v): %v", m, err)
+							s.Log.Errorf("creating movie(%v): %v", m, err)
 							continue
 						}
 					}
-					c.Redis.Set(ctx, fmt.Sprintf("movie:%d", m.Id), true, 0)
+					s.Cache.Set(ctx, fmt.Sprintf("movie:%d", m.Id), true, 0)
 				}
 
 				// movie exists so insert credit entry for this actor
 				credit := db.CreditIn{ActorId: cr.ID, MovieId: mc.ID, CreditId: mc.CreditID, Character: mc.Character}
 
 				// check if movie already entered for actor, if so skip
-				if exist, err := c.Redis.SIsMember(ctx, fmt.Sprintf("actor:%d:movies", credit.ActorId), credit.MovieId).Result(); err == nil && exist {
+				if exist, err := s.Cache.SIsMember(ctx, fmt.Sprintf("actor:%d:movies", credit.ActorId), credit.MovieId).Result(); err == nil && exist {
 					continue
 				}
 				// check for custom reason to skip credit
@@ -83,20 +83,20 @@ func runGetMovies(ctx context.Context, c *config.RConfig) {
 				if shouldSkipCredit(credit) {
 					continue
 				}
-				if _, err = c.Repo.CreateCredit(credit); err != nil {
+				if _, err = s.Repo.CreateCredit(credit); err != nil {
 					if errors.Is(err, db.ErrDuplicate) {
-						c.Log.Debugf("skip creating existing credit(%v)", credit)
+						s.Log.Debugf("skip creating existing credit(%v)", credit)
 					} else {
-						c.Log.Errorf("creating credit(%v): %v", credit, err)
+						s.Log.Errorf("creating credit(%v): %v", credit, err)
 					}
 				} else {
-					c.Redis.SAdd(ctx, fmt.Sprintf("actor:%d:movies", credit.ActorId), credit.MovieId)
+					s.Cache.SAdd(ctx, fmt.Sprintf("actor:%d:movies", credit.ActorId), credit.MovieId)
 				}
 			}
 		}
 		return nil
 	}
-	err = c.Tmdb.GetAllActorMovieCredits(ctx, credits, reducer, actorIds...)
+	err = s.Tmdb.GetAllActorMovieCredits(ctx, credits, reducer, actorIds...)
 	if err != nil {
 		log.Fatalln("getting all actor movie credits: ", err)
 	}

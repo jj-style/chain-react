@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/jj-style/chain-react/src/config"
 	"github.com/jj-style/chain-react/src/server"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
@@ -19,8 +18,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cfg := cmd.Context().Value(config.RConfig{}).(config.RConfig)
-		s := server.NewServer(&cfg)
+		s := cmd.Context().Value(server.Server{}).(*server.Server)
 		s.Router.Run(":8080")
 	},
 }

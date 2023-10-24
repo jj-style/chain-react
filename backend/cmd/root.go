@@ -3,16 +3,18 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/jj-style/chain-react/src/config"
+	"github.com/jj-style/chain-react/src/server"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
+var cleanup func()
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -30,8 +32,15 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			log.Fatalln("unmarshalling config: ", err)
 		}
-		rcfg := config.NewRuntimeConfig(cfg)
-		cmd.SetContext(context.WithValue(cmd.Context(), config.RConfig{}, rcfg))
+		var s *server.Server
+		s, cleanup, err = wireApp(&cfg.Tmdb, &cfg.Db, &cfg.Meilisearch, &cfg.Redis, log.New())
+		if err != nil {
+			panic(err)
+		}
+		cmd.SetContext(context.WithValue(cmd.Context(), server.Server{}, s))
+	},
+	PersistentPostRun: func(cmd *cobra.Command, args []string) {
+		cleanup()
 	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
