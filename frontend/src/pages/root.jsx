@@ -30,11 +30,11 @@ const Root = () => {
   const [openHelp, setOpenHelp] = useState(false);
 
   // dev state init
-  useEffect(() => {
-    setStart({ name: "Leonardo DiCaprio", id: 6193 });
-    setEnd({ name: "Tom Cruise", id: 500 });
-    setChain([{ name: "Ken Watanabe", id: 3899 }]);
-  }, []);
+  // useEffect(() => {
+  //   setStart({ name: "Leonardo DiCaprio", id: 6193 });
+  //   setEnd({ name: "Tom Cruise", id: 500 });
+  //   setChain([{ name: "Ken Watanabe", id: 3899 }]);
+  // }, []);
 
   // random url based on whether start/end are selected
   let randomUrlPath =
