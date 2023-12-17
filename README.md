@@ -2,6 +2,8 @@
 
 chain-react is a web based trivia game for guessing a path between actors who have acted in common movies.
 
+[![CI](https://github.com/jj-style/chain-react/actions/workflows/ci.yml/badge.svg)](https://github.com/jj-style/chain-react/actions/workflows/ci.yml)
+
 ## Demo
 You can access the site here https://chain-react.xzy.
 
