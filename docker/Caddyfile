@@ -30,6 +30,6 @@ chain-react.xyz {
 	}
 
 	handle {
-		reverse_proxy frontend:9000
+		reverse_proxy frontend:80
 	}
 }
