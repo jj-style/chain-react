@@ -17,7 +17,8 @@ test:
 # run test suite and produce coverage report
 test-cover:
     go install github.com/axw/gocov/gocov@latest
-    go test -coverprofile=coverage.out ./...
+    go install github.com/AlekSi/gocov-xml@latest
+    gocov test ./... | gocov-xml > coverage.xml
 
 # format code
 fmt:
