@@ -70,7 +70,7 @@ jobs:
         env:
           FRONTEND_DOTENV_PROD: ${{ secrets.FRONTEND_DOTENV_PROD }}
         run: |
-          echo $FRONTEND_DOTENV_PROD | base64 -d > .env.production
+          echo "$FRONTEND_DOTENV_PROD" | base64 -d > .env.production
 
       - name: Build and push frontend
         uses: docker/build-push-action@v4
