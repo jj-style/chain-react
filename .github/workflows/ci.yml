@@ -18,9 +18,10 @@ jobs:
       
       - name: Run tests and publish coverage
         run: just test-ci
-        working-dir: backend
+        working-directory: backend
       
       - name: Code Coverage Summary Report
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
           filename: coverage.xml
+        working-directory: backend
