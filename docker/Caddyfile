@@ -30,8 +30,6 @@ chain-react.xyz {
 	}
 
 	handle {
-		root * /var/www/chainreact
-		try_files {path} /index.html
-		file_server
+		reverse_proxy frontend:9000
 	}
 }
