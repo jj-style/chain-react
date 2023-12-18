@@ -9,6 +9,7 @@ package cmd
 import (
 	"github.com/jj-style/chain-react/src/config"
 	"github.com/jj-style/chain-react/src/db"
+	"github.com/jj-style/chain-react/src/redis"
 	"github.com/jj-style/chain-react/src/search"
 	"github.com/jj-style/chain-react/src/server"
 	"github.com/jj-style/chain-react/src/tmdb"
@@ -29,7 +30,8 @@ func wireApp(tConf *config.TmdbConfig, dbConf *config.DbConfig, sConf *config.Me
 	}
 	tmDb := tmdb.NewTMDb(tConf, logger)
 	searchRepository := search.NewRepository(sConf, logger)
-	serverServer := server.NewServer(logger, repository, tmDb, searchRepository, rConf)
+	client := cache.NewRedis(rConf)
+	serverServer := server.NewServer(logger, repository, tmDb, searchRepository, client)
 	return serverServer, func() {
 	}, nil
 }

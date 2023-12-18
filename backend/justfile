@@ -8,6 +8,7 @@ build:
 
 # generate build code
 generate:
+    go get github.com/google/wire/cmd/wire@v0.5.0
     go generate ./...
 
 # run test suite
