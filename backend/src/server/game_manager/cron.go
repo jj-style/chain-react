@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// CronGameManager manages games according to a given cron schedule.
 type CronGameManager struct {
 	repo  db.Repository
 	redis *redis.Client
@@ -17,37 +18,21 @@ type CronGameManager struct {
 	cron  *cron.Cron
 }
 
-func NewCronGameManager(logger *log.Logger, conf *config.Server, repo db.Repository, redis *redis.Client) (*CronGameManager, func(), error) {
+// Creates a new CronGameManager
+func NewCronGameManager(logger *log.Logger, conf *config.Server, repo db.Repository, cache *redis.Client) (*CronGameManager, func(), error) {
 	c := cron.New(cron.WithLocation(time.UTC))
+
 	c.AddFunc(conf.GameSchedule, func() {
-		logger.Debug("updating game")
-		var start, end *db.Actor
-		var err error = nil
-		for {
-			start, err = repo.RandomActor()
-			if err != nil {
-				logger.Errorf("getting start actor for new game: %v", err)
-				return
-			}
-			end, err = repo.RandomActorNotId(start.Id)
-			if err != nil {
-				logger.Errorf("getting end actor for new game: %v", err)
-				return
-			}
-
-			// TODO: check redis, if okay - set redis and break
-			// if not in redis {...
-			logger.WithFields(log.Fields{"start": start, "end": end}).Debug("new game")
-			break
-		}
-
+		NewGame(logger, repo, cache)
 	})
-	logger.WithField("schedule", conf.GameSchedule).Info("starting game manager")
+
 	c.Start()
+	logger.WithField("schedule", conf.GameSchedule).Info("started game manager")
+
 	return &CronGameManager{
 			log:   logger,
 			repo:  repo,
-			redis: redis,
+			redis: cache,
 			cron:  c,
 		}, func() {
 			c.Stop()
