@@ -4,7 +4,16 @@ type Config struct {
 	Tmdb        TmdbConfig        `mapstructure:"tmdb"`
 	Db          DbConfig          `mapstructure:"db"`
 	Meilisearch MeilisearchConfig `mapstructure:"meilisearch"`
-	Redis       RedisConfig
+	Redis       RedisConfig       `mapstructure:"redis"`
+	Log         struct {
+		Level string `mapstructure:"level"`
+	} `mapstructure:"log"`
+	Server `mapstructure:"server"`
+}
+
+type Server struct {
+	GameSchedule string `mapstructure:"game_schedule"`
+	Cors         string `mapstructure:"cors"`
 }
 
 type TmdbConfig struct {

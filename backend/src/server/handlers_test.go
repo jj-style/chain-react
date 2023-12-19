@@ -21,7 +21,7 @@ import (
 func givenServer(mockDb *dbMocks.MockRepository, mockTMDb *tmdbMocks.MockTMDb, mockSearch *searchMocks.MockRepository) Server {
 	// setup server
 	srv := Server{
-		Router: newRouter(true),
+		Router: newRouter(true, "*"),
 		Repo:   mockDb,
 		Tmdb:   mockTMDb,
 		Search: mockSearch,

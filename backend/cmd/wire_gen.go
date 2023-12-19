@@ -12,6 +12,7 @@ import (
 	"github.com/jj-style/chain-react/src/redis"
 	"github.com/jj-style/chain-react/src/search"
 	"github.com/jj-style/chain-react/src/server"
+	"github.com/jj-style/chain-react/src/server/game_manager"
 	"github.com/jj-style/chain-react/src/tmdb"
 	"github.com/sirupsen/logrus"
 )
@@ -23,7 +24,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp init application.
-func wireApp(tConf *config.TmdbConfig, dbConf *config.DbConfig, sConf *config.MeilisearchConfig, rConf *config.RedisConfig, logger *logrus.Logger) (*server.Server, func(), error) {
+func wireApp(srvConf *config.Server, tConf *config.TmdbConfig, dbConf *config.DbConfig, sConf *config.MeilisearchConfig, rConf *config.RedisConfig, logger *logrus.Logger) (*server.Server, func(), error) {
 	repository, err := db.NewRepository(dbConf)
 	if err != nil {
 		return nil, nil, err
@@ -31,7 +32,12 @@ func wireApp(tConf *config.TmdbConfig, dbConf *config.DbConfig, sConf *config.Me
 	tmDb := tmdb.NewTMDb(tConf, logger)
 	searchRepository := search.NewRepository(sConf, logger)
 	client := cache.NewRedis(rConf)
-	serverServer := server.NewServer(logger, repository, tmDb, searchRepository, client)
+	cronGameManager, cleanup2, err := gamemanager.NewCronGameManager(logger, srvConf, repository, client)
+	if err != nil {
+		return nil, nil, err
+	}
+	serverServer := server.NewServer(logger, srvConf, repository, tmDb, searchRepository, client, cronGameManager)
 	return serverServer, func() {
+		cleanup2()
 	}, nil
 }
