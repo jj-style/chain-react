@@ -48,4 +48,5 @@ func (s *Server) setupRoutes() {
 	api.POST("/verify", s.handleVerify)
 	api.POST("/verifyEdges", s.handleVerifyEdges)
 	api.POST("/graph", s.handleGetGraph)
+	api.GET("/managedGame", s.handleGetManagedGame)
 }

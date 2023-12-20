@@ -15,3 +15,6 @@ packages:
     interfaces:
       TMDb:
       TMDbClient:
+  github.com/jj-style/chain-react/src/server/game_manager:
+    interfaces:
+      GameManager:

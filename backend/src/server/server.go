@@ -24,10 +24,10 @@ type Server struct {
 	Tmdb        tmdb.TMDb
 	Search      search.Repository
 	Cache       *redis.Client
-	GameManager *gamemanager.CronGameManager
+	GameManager gamemanager.GameManager
 }
 
-func NewServer(logger *log.Logger, conf *config.Server, repo db.Repository, tmdb tmdb.TMDb, search search.Repository, redis *redis.Client, gameManager *gamemanager.CronGameManager) *Server {
+func NewServer(logger *log.Logger, conf *config.Server, repo db.Repository, tmdb tmdb.TMDb, search search.Repository, redis *redis.Client, gameManager gamemanager.GameManager) *Server {
 
 	s := &Server{
 		Router:      newRouter(viper.GetBool("devMode"), conf.Cors),

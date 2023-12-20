@@ -14,6 +14,11 @@ const (
 	GameKey string = "gameOfTheDay"
 )
 
+type GameManager interface {
+	// GetGame gets the current game
+	GetGame(context.Context) (*Game, error)
+}
+
 type Game struct {
 	Start *db.Actor `json:"start"`
 	End   *db.Actor `json:"end"`

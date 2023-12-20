@@ -12,20 +12,24 @@ import (
 	"github.com/jj-style/chain-react/src/db"
 	dbMocks "github.com/jj-style/chain-react/src/db/mocks"
 	searchMocks "github.com/jj-style/chain-react/src/search/mocks"
+	gamemanager "github.com/jj-style/chain-react/src/server/game_manager"
+	gmMocks "github.com/jj-style/chain-react/src/server/game_manager/mocks"
 	tmdbMocks "github.com/jj-style/chain-react/src/tmdb/mocks"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-func givenServer(mockDb *dbMocks.MockRepository, mockTMDb *tmdbMocks.MockTMDb, mockSearch *searchMocks.MockRepository) Server {
+func givenServer(mockDb *dbMocks.MockRepository, mockTMDb *tmdbMocks.MockTMDb, mockSearch *searchMocks.MockRepository, mockGm *gmMocks.MockGameManager) Server {
 	// setup server
 	srv := Server{
-		Router: newRouter(true, "*"),
-		Repo:   mockDb,
-		Tmdb:   mockTMDb,
-		Search: mockSearch,
-		Log:    logrus.New(),
+		Router:      newRouter(true, "*"),
+		Repo:        mockDb,
+		Tmdb:        mockTMDb,
+		Search:      mockSearch,
+		GameManager: mockGm,
+		Log:         logrus.New(),
 	}
 	srv.setupRoutes()
 	return srv
@@ -36,12 +40,13 @@ func TestGetRandomActor_Happy(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	actor := db.Actor{Id: 1, Name: "Jackie Chan", Popularity: 100}
 	mockDb.EXPECT().RandomActor().Return(&actor, nil)
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	w := httptest.NewRecorder()
@@ -62,11 +67,12 @@ func TestGetRandomActor_Error(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	mockDb.EXPECT().RandomActor().Return(nil, errors.New("boom"))
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	w := httptest.NewRecorder()
@@ -82,13 +88,14 @@ func TestGetRandomActorNot_Happy(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	jc := db.Actor{Id: 1, Name: "Jackie Chan", Popularity: 100}
 	ct := db.Actor{Id: 2, Name: "Chris Tucker", Popularity: 100}
 	mockDb.EXPECT().RandomActorNotId(1).Return(&ct, nil)
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	w := httptest.NewRecorder()
@@ -109,9 +116,10 @@ func TestGetRandomActorNot_InvalidIdParam(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	w := httptest.NewRecorder()
@@ -127,11 +135,12 @@ func TestGetRandomActorNot_Error(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	mockDb.EXPECT().RandomActorNotId(1).Return(nil, errors.New("boom"))
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	w := httptest.NewRecorder()
@@ -147,6 +156,7 @@ func TestVerifyEdgesHappy(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	jc := db.Actor{Id: 1, Name: "Jackie Chan", Popularity: 100}
 	ct := db.Actor{Id: 2, Name: "Chris Tucker", Popularity: 100}
@@ -170,7 +180,7 @@ func TestVerifyEdgesHappy(t *testing.T) {
 	)
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	jsonBody := []byte(`{"chain": [1, 2]}`)
@@ -202,6 +212,7 @@ func TestVerifyEdgesUnhappy(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	mockDb.EXPECT().VerifyWithEdges(db.Chain{1, 2}).Return(
 		[]*db.Edge{},
@@ -209,7 +220,7 @@ func TestVerifyEdgesUnhappy(t *testing.T) {
 	)
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	jsonBody := []byte(`{"chain": [1, 2]}`)
@@ -240,9 +251,10 @@ func TestVerifyEdgesBadRequest(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	jsonBody := []byte(`{"chain": "not slice of ints"}`)
@@ -261,11 +273,12 @@ func TestVerifyHappy(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	mockDb.EXPECT().Verify(db.Chain{1, 2}).Return(true, nil)
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	jsonBody := []byte(`{"chain": [1, 2]}`)
@@ -295,11 +308,12 @@ func TestVerifyUnhappy(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	mockDb.EXPECT().Verify(db.Chain{1, 2}).Return(false, errors.New("boom"))
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	jsonBody := []byte(`{"chain": [1, 2]}`)
@@ -329,9 +343,10 @@ func TestVerifyBadRequest(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	jsonBody := []byte(`{"chain": "not slice of ints"}`)
@@ -350,9 +365,10 @@ func TestGetGraph_UnhappyBadRequestJson(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	jsonBody := []byte(`{"bad": "json"}`)
@@ -371,9 +387,10 @@ func TestGetGraph_UnhappyBadRequestLength(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	jsonBody := []byte(`{"chain": [1, 2], "length": 10}`)
@@ -392,11 +409,12 @@ func TestGetGraph_UnhappyError(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	mockDb.EXPECT().GetGraph(4, 1, 2).Return([]dbtype.Path{}, errors.New("boom"))
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	jsonBody := []byte(`{"chain": [1, 2], "length": 4}`)
@@ -415,6 +433,7 @@ func TestGetGraph_Happy(t *testing.T) {
 	mockDb := dbMocks.NewMockRepository(t)
 	mockTMDb := tmdbMocks.NewMockTMDb(t)
 	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
 
 	mockDb.EXPECT().GetGraph(4, 1, 2).Return([]dbtype.Path{
 		{
@@ -434,7 +453,7 @@ func TestGetGraph_Happy(t *testing.T) {
 	}, nil)
 
 	// create server
-	srv := givenServer(mockDb, mockTMDb, mockSearch)
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
 
 	// handle request
 	jsonBody := []byte(`{"chain": [1, 2], "length": 4}`)
@@ -446,4 +465,55 @@ func TestGetGraph_Happy(t *testing.T) {
 
 	// check response
 	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestGetManagedGame_Happy(t *testing.T) {
+	// setup mocks
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
+
+	mockGm.EXPECT().GetGame(mock.Anything).Return(nil, errors.New("boom"))
+
+	// create server
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
+
+	// handle request
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/api/managedGame", nil)
+	srv.Router.ServeHTTP(w, req)
+
+	// check response
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+}
+
+func TestGetManagedGame_Unhappy(t *testing.T) {
+	// setup mocks
+	mockDb := dbMocks.NewMockRepository(t)
+	mockTMDb := tmdbMocks.NewMockTMDb(t)
+	mockSearch := searchMocks.NewMockRepository(t)
+	mockGm := gmMocks.NewMockGameManager(t)
+
+	game := gamemanager.Game{
+		Start: &db.Actor{Id: 1, Name: "a"},
+		End:   &db.Actor{Id: 2, Name: "b"},
+	}
+	mockGm.EXPECT().GetGame(mock.Anything).Return(&game, nil)
+
+	// create server
+	srv := givenServer(mockDb, mockTMDb, mockSearch, mockGm)
+
+	// handle request
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/api/managedGame", nil)
+	srv.Router.ServeHTTP(w, req)
+
+	// check response
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var got gamemanager.Game
+	err := json.Unmarshal(w.Body.Bytes(), &got)
+	assert.NoError(t, err)
+	assert.Equal(t, game, got)
 }
