@@ -2,8 +2,6 @@ package gamemanager
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"time"
 
 	"github.com/jj-style/chain-react/src/config"
@@ -24,39 +22,29 @@ type CronGameManager struct {
 // Creates a new CronGameManager
 func NewCronGameManager(logger *log.Logger, conf *config.Server, repo db.Repository, cache *redis.Client) (GameManager, func(), error) {
 	c := cron.New(cron.WithLocation(time.UTC))
+	manager := &CronGameManager{
+		log:   logger,
+		repo:  repo,
+		redis: cache,
+		cron:  c,
+	}
 
 	c.AddFunc(conf.GameSchedule, func() {
-		NewGame(logger, repo, cache)
+		manager.CreateGame(context.TODO())
 	})
 
 	c.Start()
 	logger.WithField("schedule", conf.GameSchedule).Info("started game manager")
 
-	return &CronGameManager{
-			log:   logger,
-			repo:  repo,
-			redis: cache,
-			cron:  c,
-		}, func() {
-			c.Stop()
-		}, nil
+	return manager, func() {
+		c.Stop()
+	}, nil
 }
 
 func (c *CronGameManager) GetGame(ctx context.Context) (*Game, error) {
-	got, err := c.redis.Get(ctx, GameKey).Bytes()
-	if err == redis.Nil {
-		return nil, errors.New("current game not set")
-	}
-	if err != nil {
-		c.log.Errorf("getting current game: %v", err)
-		return nil, err
-	}
+	return GetGame(ctx, c.redis)
+}
 
-	var g Game
-	if err := json.Unmarshal(got, &g); err != nil {
-		c.log.Errorf("parsing current game: %v", err)
-		return nil, err
-	}
-
-	return &g, nil
+func (c *CronGameManager) CreateGame(ctx context.Context) (*Game, error) {
+	return NewGame(ctx, c.log, c.repo, c.redis)
 }

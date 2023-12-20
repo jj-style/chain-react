@@ -1,6 +1,7 @@
 package gamemanager_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -20,6 +21,7 @@ func TestNewGame(t *testing.T) {
 		args     args
 		setup    func(*db.MockRepository, redismock.ClientMock)
 		checkErr assert.ErrorAssertionFunc
+		want     *gamemanager.Game
 	}{
 		{
 			name: "happy path",
@@ -33,6 +35,7 @@ func TestNewGame(t *testing.T) {
 				cache.ExpectSet(gamemanager.GameKey, value, 0).RedisNil()
 			},
 			checkErr: assert.NoError,
+			want:     &gamemanager.Game{Start: &db2.Actor{Id: 1, Name: "a", Popularity: 0}, End: &db2.Actor{Id: 2, Name: "b", Popularity: 0}},
 		},
 		{
 			name: "error getting start",
@@ -81,9 +84,11 @@ func TestNewGame(t *testing.T) {
 				tt.setup(repo, redisMock)
 			}
 
-			err := gamemanager.NewGame(logger, repo, cache)
+			got, err := gamemanager.NewGame(context.Background(), logger, repo, cache)
 			tt.checkErr(t, err)
-
+			if tt.want != nil {
+				assert.Equal(t, tt.want, got)
+			}
 			if err := redisMock.ExpectationsWereMet(); err != nil {
 				t.Error(err)
 			}
