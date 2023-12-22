@@ -29,7 +29,18 @@ chain-react.xyz {
 		reverse_proxy backend:8080
 	}
 
+	@spa {
+		not {
+			path /css/* /js/* /static/*
+		}
+	}
+
+	handle @spa {
+		rewrite * /
+		reverse_proxy http://frontend:80
+	}
+
 	handle {
-		reverse_proxy frontend:80
+		reverse_proxy http://frontend:80
 	}
 }
