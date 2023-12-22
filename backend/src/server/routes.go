@@ -7,10 +7,9 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 )
 
-func newRouter(devMode bool) *gin.Engine {
+func newRouter(devMode bool, corsValue string) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
@@ -35,7 +34,7 @@ func newRouter(devMode bool) *gin.Engine {
 	if devMode {
 		config.AllowOrigins = []string{"*"}
 	} else {
-		config.AllowOrigins = []string{viper.GetString("server.cors")}
+		config.AllowOrigins = []string{corsValue}
 	}
 	r.Use(cors.New(config))
 	return r
@@ -49,4 +48,5 @@ func (s *Server) setupRoutes() {
 	api.POST("/verify", s.handleVerify)
 	api.POST("/verifyEdges", s.handleVerifyEdges)
 	api.POST("/graph", s.handleGetGraph)
+	api.GET("/managedGame", s.handleGetManagedGame)
 }

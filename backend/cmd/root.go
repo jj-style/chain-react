@@ -33,7 +33,19 @@ to quickly create a Cobra application.`,
 			log.Fatalln("unmarshalling config: ", err)
 		}
 		var s *server.Server
-		s, cleanup, err = wireApp(&cfg.Tmdb, &cfg.Db, &cfg.Meilisearch, &cfg.Redis, log.New())
+
+		logger := log.New()
+		logger.SetFormatter(&log.TextFormatter{
+			DisableTimestamp: false,
+			FullTimestamp:    true,
+		})
+		logger.SetReportCaller(true)
+		if lvl, err := log.ParseLevel(viper.GetString("LOG.LEVEL")); err == nil {
+			log.WithField("level", lvl.String()).Info("setting log level")
+			logger.SetLevel(lvl)
+		}
+
+		s, cleanup, err = wireApp(&cfg.Server, &cfg.Tmdb, &cfg.Db, &cfg.Meilisearch, &cfg.Redis, logger)
 		if err != nil {
 			panic(err)
 		}

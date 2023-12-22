@@ -135,3 +135,13 @@ func (s *Server) handleGetGraph(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{"result": g})
 }
+
+func (s *Server) handleGetManagedGame(c *gin.Context) {
+	game, err := s.GameManager.GetGame(c.Request.Context())
+	if err != nil {
+		s.Log.Errorf("getting current game from manager: %v", err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, game)
+}

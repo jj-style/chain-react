@@ -11,6 +11,6 @@ import (
 )
 
 // wireApp init application.
-func wireApp(tConf *config.TmdbConfig, dbConf *config.DbConfig, sConf *config.MeilisearchConfig, rConf *config.RedisConfig, logger *logrus.Logger) (*server.Server, func(), error) {
+func wireApp(srvConf *config.Server, tConf *config.TmdbConfig, dbConf *config.DbConfig, sConf *config.MeilisearchConfig, rConf *config.RedisConfig, logger *logrus.Logger) (*server.Server, func(), error) {
 	panic(wire.Build(server.ProviderSet))
 }

@@ -54,7 +54,7 @@ const Cheat = () => {
 
   return (
     <>
-      <p>Explore paths between two actors without guessing a link.</p>
+      <p>Explore direct paths between two actors without guessing a link.</p>
       <Modal show={showModal} onHide={handleCloseModalNo}>
         <Modal.Header closeButton>
           <Modal.Title>Warning</Modal.Title>

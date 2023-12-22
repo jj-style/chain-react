@@ -7,7 +7,7 @@ build:
     mkdir -p build && go build -o build/main
 
 # generate build code
-generate:
+generate: && tidy
     go get github.com/google/wire/cmd/wire@v0.5.0
     go generate ./...
 
