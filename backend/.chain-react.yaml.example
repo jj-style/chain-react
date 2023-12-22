@@ -14,3 +14,4 @@ log:
   level: debug
 server:
   cors: "*"
+  game_schedule: "0 0 * * *"
