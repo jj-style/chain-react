@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
-import { Root, Support, Cheat } from "./pages";
+import { Root, Support, Cheat, Daily } from "./pages";
 
 const Router = createBrowserRouter([
   {
@@ -11,6 +11,7 @@ const Router = createBrowserRouter([
     element: <Support />,
   },
   { path: "/cheat", element: <Cheat /> },
+  { path: "/daily", element: <Daily /> },
 ]);
 
 export default Router;

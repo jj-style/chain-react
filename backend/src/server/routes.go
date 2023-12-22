@@ -32,7 +32,7 @@ func newRouter(devMode bool, corsValue string) *gin.Engine {
 	config := cors.DefaultConfig()
 	config.ExposeHeaders = []string{"Access-Control-Allow-Origin"}
 	if devMode {
-		config.AllowOrigins = []string{"*"}
+		config = cors.DefaultConfig()
 	} else {
 		config.AllowOrigins = []string{corsValue}
 	}
