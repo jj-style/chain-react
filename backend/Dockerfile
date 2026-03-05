@@ -13,6 +13,8 @@ FROM scratch
 WORKDIR /app
 
 COPY --from=builder /src/build .
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+ENV GIN_MODE=release
 EXPOSE 8000
 USER 1000:1000
 ENTRYPOINT [ "./main", "server" ]
