@@ -6,11 +6,11 @@ import (
 )
 
 type MeilisearchRepository struct {
-	client *meilisearch.Client
+	client meilisearch.ServiceManager
 	log    *log.Logger
 }
 
-func NewMeilisearchRepository(c *meilisearch.Client, l *log.Logger) MeilisearchRepository {
+func NewMeilisearchRepository(c meilisearch.ServiceManager, l *log.Logger) MeilisearchRepository {
 	return MeilisearchRepository{
 		client: c,
 		log:    l,
@@ -19,7 +19,7 @@ func NewMeilisearchRepository(c *meilisearch.Client, l *log.Logger) MeilisearchR
 
 func (m *MeilisearchRepository) AddDocuments(docs interface{}, index string) error {
 	idx := m.client.Index(index)
-	task, err := idx.AddDocuments(docs)
+	task, err := idx.AddDocuments(docs, &meilisearch.DocumentOptions{})
 	if err != nil {
 		return err
 	}

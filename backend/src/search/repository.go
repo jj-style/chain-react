@@ -11,10 +11,7 @@ type Repository interface {
 }
 
 func NewRepository(conf *config.MeilisearchConfig, logger *log.Logger) Repository {
-	m := meilisearch.NewClient(meilisearch.ClientConfig{
-		Host:   conf.Host,
-		APIKey: conf.ApiKey,
-	})
+	m := meilisearch.New(conf.Host, meilisearch.WithAPIKey(conf.ApiKey))
 	meili := NewMeilisearchRepository(m, logger)
 	return &meili
 }
