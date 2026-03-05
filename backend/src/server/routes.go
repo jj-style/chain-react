@@ -10,6 +10,11 @@ import (
 )
 
 func newRouter(devMode bool, corsValue string) *gin.Engine {
+	if devMode {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
